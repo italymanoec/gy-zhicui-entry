@@ -6,8 +6,11 @@
 <title>冠億199案 買賣預約單</title>
 <!-- 【令#1019_2255】站3 備援入口：不放在 script.google.com 上的靜態頁。
      開頁先在框裡開主入口（正式 /exec?），等站3 前端回「booking-ready」訊息；15 秒沒回＝這台裝置主入口沒開出來：
-     ①自動換備用路徑（/a/macros/gmail.com/s/同一ID/exec，同一個部署、不同網址樣式）再等 15 秒；
-     ②兩條都沒開出來就顯示按鈕；
+     ①自動換「不帶 Google 登入」的框（同一個 /exec?，iframe 加 credentialless）再等 15 秒；
+     ②再換備用路徑（/a/macros/gmail.com/s/同一ID/exec，同一個部署、不同網址樣式）再等 15 秒；
+     ③都沒開出來就顯示按鈕；
+     【交接10】手機瀏覽器同時登入多個 Google 帳號時，Google 會把網址插成 /macros/u/N/s/…（出「找不到網頁」，沒到站3）。
+     框不帶 Google cookie 就不會被插：iPhone（Safari、LINE、Chrome 都是 WebKit）本來就擋第三方 cookie；Android Chrome 靠 credentialless。
      每一次的結果（開出來／沒開出來、哪條路、幾秒、UA）都用不帶 cookie 的 POST 回報給站3 doPost，記在 Apps Script 執行項目。
      本頁不存任何資料、不碰 PIN。 -->
 <style>
@@ -49,6 +52,7 @@
   var MAINID = PROBES[qs.get('probe')] ? qs.get('probe') : ID;
   var ROUTES = [
     { 名: '主入口', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?' },
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + ID + '/exec?', 無cookie: true },
     { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
   ];
   var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
@@ -57,7 +61,14 @@
   var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
   var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
   document.getElementById('bTab').href = ROUTES[0].url;
-  document.getElementById('bAlt').href = ROUTES[1].url;
+  document.getElementById('bAlt').href = ROUTES[2].url;
+  /* credentialless 要在導航前就掛上，所以每換一條路都換一個新框 */
+  function frame(nocookie) {
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = app.title; f.setAttribute('allow', 'clipboard-write');
+    if (nocookie) f.setAttribute('credentialless', '');
+    app.parentNode.replaceChild(f, app); app = f;
+  }
 
   function report(結果, extra) {
     var body = JSON.stringify(Object.assign({
@@ -70,8 +81,9 @@
   function open(i) {
     idx = i; ready = false; t0 = Date.now();
     panel.hidden = false; btns.hidden = true;
-    msg.textContent = i === 0 ? '開啟中…' : '主入口這台裝置沒開出來，改用備用路徑開啟中…';
+    msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
     foot.textContent = '';
+    frame(!!ROUTES[i].無cookie);
     app.src = ROUTES[i].url;
     clearTimeout(timer);
     timer = setTimeout(function () {
@@ -91,7 +103,8 @@
     report('開出來');
   });
   document.getElementById('bRetry').onclick = function () { open(0); };
-  open(0);
+  /* 測試用：?route=N 從第 N 條路開始（演練用，正常使用不帶） */
+  open(Math.min(ROUTES.length - 1, Math.max(0, Number(qs.get('route')) || 0)));
 })();
 </script>
 </body>
