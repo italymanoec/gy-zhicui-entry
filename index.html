@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>冠億199案 買賣預約單</title>
+<!-- 【令#1020_1653 APP化】PWA：可「加入主畫面」成 App 圖示（manifest＋icon）。只加這幾行 head，不加 service worker、不改下面開頁／換路邏輯。 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="預約單">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 【令#1019_2255】站3 備援入口：不放在 script.google.com 上的靜態頁。
      開頁先在框裡開主入口（正式 /exec?），等站3 前端回「booking-ready」訊息；15 秒沒回＝這台裝置主入口沒開出來：
      ①自動換「不帶 Google 登入」的框（同一個 /exec?，iframe 加 credentialless）再等 15 秒；

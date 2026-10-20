@@ -1,0 +1,17 @@
+{
+  "name": "冠億199案 買賣預約單",
+  "short_name": "預約單",
+  "description": "冠億植淬 買賣預約單（站3）入口",
+  "lang": "zh-Hant",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f6",
+  "theme_color": "#9e2a2b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
