@@ -41,9 +41,17 @@
   button, a.btn { display:block; width:100%; box-sizing:border-box; margin-top:10px; padding:12px; border-radius:8px; border:0; font-size:16px; text-align:center; text-decoration:none; cursor:pointer; }
   .pri { background:var(--red); color:#fff; }
   .sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+  /* 【交接32】載入中字樣：純 HTML／CSS，首屏就在，不等 JS；超過 0.6 秒還沒開好才浮出（快的時候不閃）。
+     pointer-events:none＝點擊直接穿過，不擋任何操作；站3 開出來（booking-ready）就收掉。本頁其他部分不動。 */
+  #loading { position:fixed; z-index:10; left:50%; top:calc(env(safe-area-inset-top, 0px) + 10px); transform:translateX(-50%); pointer-events:none;
+             padding:4px 14px; border-radius:999px; background:rgba(17,24,39,.72); color:#fff; font-size:13px; line-height:1.6; white-space:nowrap;
+             opacity:0; animation:gyLoading .2s ease-out .6s forwards; }
+  #loading[hidden] { display:none; }
+  @keyframes gyLoading { to { opacity:1; } }
 </style>
 </head>
 <body>
+<div id="loading" role="status" aria-live="polite">載入中…</div>
 <iframe id="app" title="冠億199案 買賣預約單" allow="clipboard-write"></iframe>
 <div id="panel">
   <div class="card">
@@ -73,6 +81,7 @@
   var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
   var app = document.getElementById('app'), panel = document.getElementById('panel');
   var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
+  var loading = document.getElementById('loading');
   var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
   document.getElementById('bTab').href = ROUTES[1].url;
   document.getElementById('bAlt').href = ROUTES[2].url;
@@ -94,7 +103,7 @@
   }
   function open(i) {
     idx = i; ready = false; t0 = Date.now();
-    panel.hidden = false; btns.hidden = true;
+    panel.hidden = false; btns.hidden = true; loading.hidden = false;
     msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
     foot.textContent = '';
     frame(!!ROUTES[i].無cookie);
@@ -106,14 +115,14 @@
       if (i + 1 < ROUTES.length) return open(i + 1);
       msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
       foot.textContent = '紀錄編號 ' + sess;
-      btns.hidden = false;
+      btns.hidden = false; loading.hidden = true;
     }, WAIT_MS);
   }
   window.addEventListener('message', function (ev) {
     var d = ev.data;
     if (!d || d.gy !== 'booking-ready' || ready) return;
     if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(new URL(ev.origin).hostname)) return;
-    ready = true; clearTimeout(timer); panel.hidden = true;
+    ready = true; clearTimeout(timer); panel.hidden = true; loading.hidden = true;
     report('開出來');
   });
   document.getElementById('bRetry').onclick = function () { open(0); };
