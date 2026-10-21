@@ -1,7 +1,8 @@
 {
-  "name": "冠億199案 買賣預約單",
-  "short_name": "預約單",
-  "description": "冠億植淬 買賣預約單（站3）入口",
+  "id": "./",
+  "name": "冠億業務通",
+  "short_name": "冠億業務通",
+  "description": "冠億業務系統（199案 買賣預約單、銷控、班表）手機入口",
   "lang": "zh-Hant",
   "start_url": "./?src=pwa",
   "scope": "./",
