@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>冠億業務通</title>
+<!-- 【交接28 1021 Jeffrey 裁】PWA「冠億業務通」測試版（/app/）：manifest＋冠億 logo 圖示＋service worker（只快取本頁外殼，不碰 script.google.com）。
+     開頁／換路邏輯與根目錄入口頁相同；Jeffrey 手機實測通過後再併回根目錄。 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="冠億業務通">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- 【交接22】先連線 Apps Script 兩個網域（省 DNS／TLS 約 0.2–0.5 秒） -->
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<!-- 【令#1019_2255】站3 備援入口：不放在 script.google.com 上的靜態頁。
+     開頁先在框裡開主入口（正式 /exec?），等站3 前端回「booking-ready」訊息；15 秒沒回＝這台裝置主入口沒開出來：
+     ①自動換「不帶 Google 登入」的框（同一個 /exec?，iframe 加 credentialless）再等 15 秒；
+     ②再換備用路徑（/a/macros/gmail.com/s/同一ID/exec，同一個部署、不同網址樣式）再等 15 秒；
+     ③都沒開出來就顯示按鈕；
+     【交接22 1020 Jeffrey 裁】順序改成「不帶登入」先、主入口第二（站3 用 PIN，不靠 Google 登入；多帳號 Android 不必先白等主入口失敗）；
+     每條路等待 15→9 秒（站3 正常 2.4–5.7 秒開出；可用 ?wait= 調）。不認 credentialless 的舊 WebView 第一條就等於帶 cookie，和以前一樣。
+     【交接10】手機瀏覽器同時登入多個 Google 帳號時，Google 會把網址插成 /macros/u/N/s/…（出「找不到網頁」，沒到站3）。
+     框不帶 Google cookie 就不會被插：iPhone（Safari、LINE、Chrome 都是 WebKit）本來就擋第三方 cookie；Android Chrome 靠 credentialless。
+     每一次的結果（開出來／沒開出來、哪條路、幾秒、UA）都用不帶 cookie 的 POST 回報給站3 doPost，記在 Apps Script 執行項目。
+     本頁不存任何資料、不碰 PIN。 -->
+<style>
+  :root { --bg:#f3f4f6; --fg:#1f2937; --red:#9e2a2b; --muted:#6b7280; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#111827; --fg:#f3f4f6; --muted:#9ca3af; --card:#1f2937; } }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family:-apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+  #app { position:fixed; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
+  #panel { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; background:var(--bg); }
+  #panel[hidden] { display:none; }
+  .card { background:var(--card); border-radius:12px; padding:20px; max-width:420px; width:100%; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size:18px; margin:0 0 8px; color:var(--red); }
+  p { margin:6px 0; line-height:1.6; font-size:15px; }
+  .muted { color:var(--muted); font-size:13px; }
+  button, a.btn { display:block; width:100%; box-sizing:border-box; margin-top:10px; padding:12px; border-radius:8px; border:0; font-size:16px; text-align:center; text-decoration:none; cursor:pointer; }
+  .pri { background:var(--red); color:#fff; }
+  .sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+</style>
+</head>
+<body>
+<iframe id="app" title="冠億業務通" allow="clipboard-write"></iframe>
+<div id="panel">
+  <div class="card">
+    <h1 id="ttl">冠億業務通</h1>
+    <p id="msg">開啟中…</p>
+    <div id="btns" hidden>
+      <button class="pri" id="bRetry">重新開啟</button>
+      <a class="btn sec" id="bTab" target="_blank" rel="noopener">在新分頁開主入口</a>
+      <a class="btn sec" id="bAlt" target="_blank" rel="noopener">在新分頁開備用路徑</a>
+    </div>
+    <p class="muted" id="foot"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var ID = 'AKfycbwyKc5HUwAf2TBOQWF9CqOfbNkboNkuzdDqADEQqfqHbp2o9WGIdJpX1kpOi8ZRlpd8';
+  var qs = new URLSearchParams(location.search);
+  /* 測試用：?probe=<部署ID> 換第一條路（只給演練與回歸用，例如指到已封存的測試部署，驗「沒開出來」那條路） */
+  var PROBES = { 'AKfycbyGwGEWvWezHcFOzGWXQ7m6-TrlqcvmgC8aEkNwJTbqnoD-X5Hkcriz4oDZRfESA-yBZQ': 1 };   /* 演練用：只收這一個「已封存」測試部署（必出 Google 錯誤頁），防被拿去框別人的程式 */
+  var MAINID = PROBES[qs.get('probe')] ? qs.get('probe') : ID;
+  var ROUTES = [
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?', 無cookie: true },
+    { 名: '主入口', url: 'https://script.google.com/macros/s/' + ID + '/exec?' },
+    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
+  ];
+  var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
+  var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
+  var app = document.getElementById('app'), panel = document.getElementById('panel');
+  var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
+  var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
+  document.getElementById('bTab').href = ROUTES[1].url;
+  document.getElementById('bAlt').href = ROUTES[2].url;
+  /* credentialless 要在導航前就掛上，所以每換一條路都換一個新框 */
+  function frame(nocookie) {
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = app.title; f.setAttribute('allow', 'clipboard-write');
+    if (nocookie) f.setAttribute('credentialless', '');
+    app.parentNode.replaceChild(f, app); app = f;
+  }
+
+  function report(結果, extra) {
+    var body = JSON.stringify(Object.assign({
+      頁: '冠億業務通(測試)', 結果: 結果, 路徑: ROUTES[idx] ? ROUTES[idx].名 : '', 秒: ((Date.now() - t0) / 1000).toFixed(1),
+      次: sess, ua: navigator.userAgent, 語系: navigator.language, 寬: innerWidth, 高: innerHeight, 時: new Date().toISOString(),
+      測試: MAINID !== ID
+    }, extra || {}));
+    try { fetch(BEACON, { method: 'POST', mode: 'no-cors', credentials: 'omit', body: body, keepalive: true }); } catch (e) {}
+  }
+  function open(i) {
+    idx = i; ready = false; t0 = Date.now();
+    panel.hidden = false; btns.hidden = true;
+    msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
+    foot.textContent = '';
+    frame(!!ROUTES[i].無cookie);
+    app.src = ROUTES[i].url;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (ready) return;
+      report('沒開出來');
+      if (i + 1 < ROUTES.length) return open(i + 1);
+      msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
+      foot.textContent = '紀錄編號 ' + sess;
+      btns.hidden = false;
+    }, WAIT_MS);
+  }
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || d.gy !== 'booking-ready' || ready) return;
+    if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(new URL(ev.origin).hostname)) return;
+    ready = true; clearTimeout(timer); panel.hidden = true;
+    report('開出來');
+  });
+  document.getElementById('bRetry').onclick = function () { open(0); };
+  /* 測試用：?route=N 從第 N 條路開始（演練用，正常使用不帶） */
+  var first = Math.min(ROUTES.length - 1, Math.max(0, Number(qs.get('route')) || 0));
+  /* 【交接28】App 從主畫面離線打開：外殼由 service worker 給，站3 本身要網路 ⇒ 先說明，連上網路自動開。
+     navigator.onLine 在手機上不一定準 ⇒ 另外打一個不帶 cookie 的小探測；探測失敗＝沒網路，停下換路計時，每 5 秒再探，通了就從頭開 */
+  function probe() {
+    return Promise.race([
+      fetch('https://script.google.com/favicon.ico?_=' + Date.now(), { mode: 'no-cors', credentials: 'omit', cache: 'no-store' }),
+      new Promise(function (_, rej) { setTimeout(function () { rej(new Error('timeout')); }, 5000); })
+    ]);
+  }
+  var offT = null;
+  function offline() {
+    clearTimeout(timer); clearTimeout(offT); ready = false;
+    panel.hidden = false; btns.hidden = true; foot.textContent = '';
+    msg.textContent = '目前沒有網路。連上網路後會自動開啟。';
+    offT = setTimeout(function () { probe().then(function () { open(first); }, offline); }, 5000);
+  }
+  if (navigator.onLine === false) offline();
+  else { open(first); probe().catch(function () { if (!ready) offline(); }); }
+  window.addEventListener('offline', function () { if (!ready) offline(); });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+})();
+</script>
+</body>
+</html>
