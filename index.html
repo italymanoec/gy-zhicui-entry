@@ -42,9 +42,17 @@
   button, a.btn { display:block; width:100%; box-sizing:border-box; margin-top:10px; padding:12px; border-radius:8px; border:0; font-size:16px; text-align:center; text-decoration:none; cursor:pointer; }
   .pri { background:var(--red); color:#fff; }
   .sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+  /* 【交接31】載入中字樣：純 HTML／CSS，首屏就在，不等 JS；超過 0.6 秒還沒開好才浮出（快的時候不閃）。
+     pointer-events:none＝點擊直接穿過，不擋任何操作；站3 開出來（booking-ready）就收掉。 */
+  #loading { position:fixed; z-index:10; left:50%; top:calc(env(safe-area-inset-top, 0px) + 10px); transform:translateX(-50%); pointer-events:none;
+             padding:4px 14px; border-radius:999px; background:rgba(17,24,39,.72); color:#fff; font-size:13px; line-height:1.6; white-space:nowrap;
+             opacity:0; animation:gyLoading .2s ease-out .6s forwards; }
+  #loading[hidden] { display:none; }
+  @keyframes gyLoading { to { opacity:1; } }
 </style>
 </head>
 <body>
+<div id="loading" role="status" aria-live="polite">載入中…</div>
 <iframe id="app" title="冠億業務通" allow="clipboard-write"></iframe>
 <div id="panel">
   <div class="card">
@@ -74,6 +82,7 @@
   var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
   var app = document.getElementById('app'), panel = document.getElementById('panel');
   var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
+  var loading = document.getElementById('loading');
   var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
   document.getElementById('bTab').href = ROUTES[1].url;
   document.getElementById('bAlt').href = ROUTES[2].url;
@@ -95,7 +104,7 @@
   }
   function open(i) {
     idx = i; ready = false; t0 = Date.now();
-    panel.hidden = false; btns.hidden = true;
+    panel.hidden = false; btns.hidden = true; loading.hidden = false;
     msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
     foot.textContent = '';
     frame(!!ROUTES[i].無cookie);
@@ -107,33 +116,38 @@
       if (i + 1 < ROUTES.length) return open(i + 1);
       msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
       foot.textContent = '紀錄編號 ' + sess;
-      btns.hidden = false;
+      btns.hidden = false; loading.hidden = true;
     }, WAIT_MS);
   }
   window.addEventListener('message', function (ev) {
     var d = ev.data;
     if (!d || d.gy !== 'booking-ready' || ready) return;
     if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(new URL(ev.origin).hostname)) return;
-    ready = true; clearTimeout(timer); panel.hidden = true;
+    ready = true; clearTimeout(timer); clearTimeout(offT); panel.hidden = true; loading.hidden = true;
     report('開出來');
   });
   document.getElementById('bRetry').onclick = function () { open(0); };
   /* 測試用：?route=N 從第 N 條路開始（演練用，正常使用不帶） */
   var first = Math.min(ROUTES.length - 1, Math.max(0, Number(qs.get('route')) || 0));
   /* 【交接28】App 從主畫面離線打開：外殼由 service worker 給，站3 本身要網路 ⇒ 先說明，連上網路自動開。
-     navigator.onLine 在手機上不一定準 ⇒ 另外打一個不帶 cookie 的小探測；探測失敗＝沒網路，停下換路計時，每 5 秒再探，通了就從頭開 */
+     navigator.onLine 在手機上不一定準 ⇒ 另外打一個小探測；探測失敗＝沒網路，停下換路計時，每 5 秒再探，通了就從頭開。
+     【交接31】修「卡在進不去」：①探測改打本站自己的 manifest（帶 ?ping= 不中快取、service worker 照樣走網路），
+     不再打 script.google.com/favicon.ico（跨站 no-cors 可能被 Google 的 CORP 標頭或 iOS 擋掉 ⇒ 永遠判成沒網路）；
+     ②站3 一開出來就不再判離線：以前 offline() 會把 ready 打回 false、把面板蓋回已開好的站3，站3 不會再送 booking-ready ⇒ 永遠卡在「目前沒有網路」；
+     ③開出來時取消排著的重探，不再把開好的站3 重新載入（填到一半的資料會不見）。 */
   function probe() {
     return Promise.race([
-      fetch('https://script.google.com/favicon.ico?_=' + Date.now(), { mode: 'no-cors', credentials: 'omit', cache: 'no-store' }),
+      fetch('manifest.webmanifest?ping=' + Date.now(), { credentials: 'omit', cache: 'no-store' }),
       new Promise(function (_, rej) { setTimeout(function () { rej(new Error('timeout')); }, 5000); })
     ]);
   }
   var offT = null;
   function offline() {
-    clearTimeout(timer); clearTimeout(offT); ready = false;
-    panel.hidden = false; btns.hidden = true; foot.textContent = '';
+    if (ready) return;
+    clearTimeout(timer); clearTimeout(offT);
+    panel.hidden = false; btns.hidden = true; loading.hidden = true; foot.textContent = '';
     msg.textContent = '目前沒有網路。連上網路後會自動開啟。';
-    offT = setTimeout(function () { probe().then(function () { open(first); }, offline); }, 5000);
+    offT = setTimeout(function () { if (!ready) probe().then(function () { if (!ready) open(first); }, offline); }, 5000);
   }
   if (navigator.onLine === false) offline();
   else { open(first); probe().catch(function () { if (!ready) offline(); }); }

@@ -7,5 +7,5 @@ self.addEventListener('activate', function (e) {
     return Promise.all(ks.filter(function (k) { return k.indexOf('gy-app-') === 0; }).map(function (k) { return caches.delete(k); }));
   }).then(function () { return self.registration.unregister(); }).then(function () {
     return self.clients.matchAll({ type: 'window' });
-  }).then(function (cs) { cs.forEach(function (c) { c.navigate(c.url); }); }));
+  }).then(function (cs) { cs.forEach(function (c) { try { if (c.navigate) c.navigate(c.url).catch(function () {}); } catch (x) {} }); }));   /* 【交接31】舊 iOS 沒有 navigate：註銷照樣完成，頁面下次開就脫離 */
 });
