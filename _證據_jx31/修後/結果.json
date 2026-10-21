@@ -1,0 +1,657 @@
+{
+  "瀏覽器": "Chrome 141.0.7390.37（--headless=new）",
+  "模擬裝置": "iPhone 13（UA：Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1，390×664）",
+  "時間": "2026-10-21T08:18:16.927Z",
+  "結果": [
+    {
+      "名稱": "修後1_根目錄_正常",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後1_根目錄_正常_3s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後1_根目錄_正常_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後1_根目錄_正常_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後2_根目錄_Google探測被擋",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後2_根目錄_Google探測被擋_3s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後2_根目錄_Google探測被擋_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後2_根目錄_Google探測被擋_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後3_根目錄_慢網路探測逾時",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "hang",
+        "站3延遲ms": 7000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 6,
+          "實際秒": 6,
+          "截圖完成秒": 6,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "隱藏",
+          "截圖": "修後3_根目錄_慢網路探測逾時_6s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後3_根目錄_慢網路探測逾時_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後3_根目錄_慢網路探測逾時_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後4_app轉址",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後4_app轉址_3s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後4_app轉址_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後5_舊app版SW已裝_換新版自動脫困",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 2,
+      "回報": [
+        "開出來",
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後5_舊app版SW已裝_換新版自動脫困_3s.png"
+        },
+        {
+          "秒": 10,
+          "實際秒": 10,
+          "截圖完成秒": 10,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後5_舊app版SW已裝_換新版自動脫困_10s.png"
+        }
+      ],
+      "換版前SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/app/",
+            "script": "/gy-zhicui-entry/app/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/app/sw.js",
+        "快取": [
+          "gy-app-v1"
+        ]
+      },
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後6_舊app版SW已裝且探測被擋_換新版",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 2,
+      "回報": [
+        "開出來",
+        "開出來"
+      ],
+      "console錯誤": [
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE"
+      ],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後6_舊app版SW已裝且探測被擋_換新版_3s.png"
+        },
+        {
+          "秒": 15,
+          "實際秒": 15,
+          "截圖完成秒": 15,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後6_舊app版SW已裝且探測被擋_換新版_15s.png"
+        }
+      ],
+      "換版前SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/app/",
+            "script": "/gy-zhicui-entry/app/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/app/sw.js",
+        "快取": [
+          "gy-app-v1"
+        ]
+      },
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後7_離線開啟再恢復",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 1000
+      },
+      "站3載入次數": 2,
+      "回報": [
+        "開出來",
+        "沒開出來",
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "隱藏",
+          "截圖": "修後7_離線開啟再恢復_3s.png"
+        },
+        {
+          "秒": 20,
+          "實際秒": 20,
+          "截圖完成秒": 20,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "修後7_離線開啟再恢復_20s.png"
+        }
+      ],
+      "斷網前SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "恢復網路秒": 9,
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修後8_回滾後SW自動解除",
+      "站台": "rollback",
+      "網址": "/gy-zhicui-entry/",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 1000
+      },
+      "站3載入次數": 3,
+      "回報": [
+        "開出來",
+        "開出來",
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/",
+          "提示面板": "顯示：開啟中…",
+          "載入中字樣": "（無）",
+          "截圖": "修後8_回滾後SW自動解除_3s.png"
+        },
+        {
+          "秒": 8,
+          "實際秒": 8,
+          "截圖完成秒": 8,
+          "網址": "/gy-zhicui-entry/",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修後8_回滾後SW自動解除_8s.png"
+        }
+      ],
+      "換版前SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "SW": {
+        "註冊": [],
+        "本頁受控": "否",
+        "快取": []
+      },
+      "最後網址": "/gy-zhicui-entry/"
+    },
+    {
+      "名稱": "任務2_jx29對照_站3慢5秒",
+      "站台": "jx29",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 5000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 0.3,
+          "實際秒": 0.3,
+          "截圖完成秒": 0.3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：開啟中…",
+          "載入中字樣": "（無）",
+          "截圖": "任務2_jx29對照_站3慢5秒_0點3s.png"
+        },
+        {
+          "秒": 1.5,
+          "實際秒": 1.5,
+          "截圖完成秒": 1.5,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：開啟中…",
+          "載入中字樣": "（無）",
+          "截圖": "任務2_jx29對照_站3慢5秒_1點5s.png"
+        },
+        {
+          "秒": 7,
+          "實際秒": 7,
+          "截圖完成秒": 7,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "任務2_jx29對照_站3慢5秒_7s.png"
+        }
+      ],
+      "首次繪製ms": 56,
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "任務2_修後_站3慢5秒",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 5000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 0.3,
+          "實際秒": 0.3,
+          "截圖完成秒": 0.3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：開啟中…",
+          "載入中字樣": "尚未浮出",
+          "載入中點擊穿透": "是（點到 DIV#panel）",
+          "截圖": "任務2_修後_站3慢5秒_0點3s.png"
+        },
+        {
+          "秒": 1.5,
+          "實際秒": 1.5,
+          "截圖完成秒": 1.5,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：開啟中…",
+          "載入中字樣": "顯示",
+          "載入中點擊穿透": "是（點到 DIV#panel）",
+          "截圖": "任務2_修後_站3慢5秒_1點5s.png"
+        },
+        {
+          "秒": 7,
+          "實際秒": 7,
+          "截圖完成秒": 7,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "任務2_修後_站3慢5秒_7s.png"
+        }
+      ],
+      "首次繪製ms": 56,
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "任務2_修後_站3快0點3秒",
+      "站台": "fix",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 300
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 0.4,
+          "實際秒": 0.4,
+          "截圖完成秒": 0.4,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "任務2_修後_站3快0點3秒_0點4s.png"
+        },
+        {
+          "秒": 1.5,
+          "實際秒": 1.5,
+          "截圖完成秒": 1.5,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "隱藏",
+          "截圖": "任務2_修後_站3快0點3秒_1點5s.png"
+        }
+      ],
+      "首次繪製ms": 68,
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    }
+  ]
+}

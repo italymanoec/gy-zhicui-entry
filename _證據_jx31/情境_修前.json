@@ -1,0 +1,9 @@
+[
+{"name":"修前1_main_app_正常","site":"main","url":"/gy-zhicui-entry/app/?src=pwa","favicon":"ok","s3Delay":2000,"shots":[3000,12000,25000],"click":true},
+{"name":"修前2_main_app_探測被擋","site":"main","url":"/gy-zhicui-entry/app/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,12000,25000],"click":true},
+{"name":"修前3_main_app_慢網路","site":"main","url":"/gy-zhicui-entry/app/?src=pwa","favicon":"hang","s3Delay":7000,"shots":[6000,12000,25000],"click":true},
+{"name":"對照_main_根目錄舊入口_探測被擋","site":"main","url":"/gy-zhicui-entry/","favicon":"abort","s3Delay":2000,"shots":[3000,25000],"click":true},
+{"name":"修前4_jx29_根目錄_探測被擋","site":"jx29","url":"/gy-zhicui-entry/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,12000,25000],"click":true},
+{"name":"修前5_jx29_根目錄_慢網路","site":"jx29","url":"/gy-zhicui-entry/?src=pwa","favicon":"hang","s3Delay":7000,"shots":[6000,12000,25000],"click":true},
+{"name":"修前6_jx29_app轉址_探測被擋","site":"jx29","url":"/gy-zhicui-entry/app/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,25000],"click":true}
+]

@@ -1,0 +1,415 @@
+{
+  "瀏覽器": "Chrome 141.0.7390.37（--headless=new）",
+  "模擬裝置": "iPhone 13（UA：Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1，390×664）",
+  "時間": "2026-10-21T08:14:59.073Z",
+  "結果": [
+    {
+      "名稱": "修前1_main_app_正常",
+      "站台": "main",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "ok",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前1_main_app_正常_3s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前1_main_app_正常_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前1_main_app_正常_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/app/",
+            "script": "/gy-zhicui-entry/app/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/app/sw.js",
+        "快取": [
+          "gy-app-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/app/?src=pwa"
+    },
+    {
+      "名稱": "修前2_main_app_探測被擋",
+      "站台": "main",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE"
+      ],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前2_main_app_探測被擋_3s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前2_main_app_探測被擋_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前2_main_app_探測被擋_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "DIV#panel",
+      "可操作": "點不到：frame.click: Timeout 2000ms exceeded.",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/app/",
+            "script": "/gy-zhicui-entry/app/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/app/sw.js",
+        "快取": [
+          "gy-app-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/app/?src=pwa"
+    },
+    {
+      "名稱": "修前3_main_app_慢網路",
+      "站台": "main",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "hang",
+        "站3延遲ms": 7000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 6,
+          "實際秒": 6,
+          "截圖完成秒": 6,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前3_main_app_慢網路_6s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前3_main_app_慢網路_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/app/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前3_main_app_慢網路_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "DIV#panel",
+      "可操作": "點不到：frame.click: Timeout 2000ms exceeded.",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/app/",
+            "script": "/gy-zhicui-entry/app/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/app/sw.js",
+        "快取": [
+          "gy-app-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/app/?src=pwa"
+    },
+    {
+      "名稱": "對照_main_根目錄舊入口_探測被擋",
+      "站台": "main",
+      "網址": "/gy-zhicui-entry/",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "對照_main_根目錄舊入口_探測被擋_3s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "對照_main_根目錄舊入口_探測被擋_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "IFRAME#app",
+      "可操作": "已點 1 次",
+      "SW": {
+        "註冊": [],
+        "本頁受控": "否",
+        "快取": []
+      },
+      "最後網址": "/gy-zhicui-entry/"
+    },
+    {
+      "名稱": "修前4_jx29_根目錄_探測被擋",
+      "站台": "jx29",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE"
+      ],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前4_jx29_根目錄_探測被擋_3s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前4_jx29_根目錄_探測被擋_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前4_jx29_根目錄_探測被擋_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "DIV#panel",
+      "可操作": "點不到：frame.click: Timeout 2000ms exceeded.",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修前5_jx29_根目錄_慢網路",
+      "站台": "jx29",
+      "網址": "/gy-zhicui-entry/?src=pwa",
+      "情境": {
+        "favicon": "hang",
+        "站3延遲ms": 7000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [],
+      "時間軸": [
+        {
+          "秒": 6,
+          "實際秒": 6,
+          "截圖完成秒": 6,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前5_jx29_根目錄_慢網路_6s.png"
+        },
+        {
+          "秒": 12,
+          "實際秒": 12,
+          "截圖完成秒": 12,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前5_jx29_根目錄_慢網路_12s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前5_jx29_根目錄_慢網路_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "DIV#panel",
+      "可操作": "點不到：frame.click: Timeout 2000ms exceeded.",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    },
+    {
+      "名稱": "修前6_jx29_app轉址_探測被擋",
+      "站台": "jx29",
+      "網址": "/gy-zhicui-entry/app/?src=pwa",
+      "情境": {
+        "favicon": "abort",
+        "站3延遲ms": 2000
+      },
+      "站3載入次數": 1,
+      "回報": [
+        "開出來"
+      ],
+      "console錯誤": [
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE",
+        "[console] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE"
+      ],
+      "時間軸": [
+        {
+          "秒": 3,
+          "實際秒": 3,
+          "截圖完成秒": 3,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "收起",
+          "載入中字樣": "（無）",
+          "截圖": "修前6_jx29_app轉址_探測被擋_3s.png"
+        },
+        {
+          "秒": 25,
+          "實際秒": 25,
+          "截圖完成秒": 25,
+          "網址": "/gy-zhicui-entry/?src=pwa",
+          "提示面板": "顯示：目前沒有網路。連上網路後會自動開啟。",
+          "載入中字樣": "（無）",
+          "截圖": "修前6_jx29_app轉址_探測被擋_25s.png"
+        }
+      ],
+      "點擊位置最上層元素": "DIV#panel",
+      "可操作": "點不到：frame.click: Timeout 2000ms exceeded.",
+      "SW": {
+        "註冊": [
+          {
+            "scope": "/gy-zhicui-entry/",
+            "script": "/gy-zhicui-entry/sw.js",
+            "狀態": "activated"
+          }
+        ],
+        "本頁受控": "/gy-zhicui-entry/sw.js",
+        "快取": [
+          "gy-root-v1"
+        ]
+      },
+      "最後網址": "/gy-zhicui-entry/?src=pwa"
+    }
+  ]
+}

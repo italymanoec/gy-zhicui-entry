@@ -2,6 +2,8 @@
 
 > 狀態：**只準備、未上線**。main 沒有動，仍是 `c796989`。所有改動都在分支 `claude/jx29-pwa-root`。
 
+> 【交接31 補】`claude/jx29-pwa-root` 的入口頁仍有「卡在『目前沒有網路』進不去」的問題，**不要直接上線這條**。改上線 `claude/jx31-pwa-stuck-35ol4m`（已含本分支全部內容＋修正），指令與回滾見 `交件_jx31.md`。下面指令中的 `origin/claude/jx29-pwa-root` 一律換成 `origin/claude/jx31-pwa-stuck-35ol4m`。
+
 ## 0. 這個分支改了什麼
 
 | 檔案 | 改動 |

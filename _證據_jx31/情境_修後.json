@@ -1,0 +1,13 @@
+[
+{"name":"修後1_根目錄_正常","site":"fix","url":"/gy-zhicui-entry/?src=pwa","favicon":"ok","s3Delay":2000,"shots":[3000,12000,25000],"click":true},
+{"name":"修後2_根目錄_Google探測被擋","site":"fix","url":"/gy-zhicui-entry/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,12000,25000],"click":true},
+{"name":"修後3_根目錄_慢網路探測逾時","site":"fix","url":"/gy-zhicui-entry/?src=pwa","favicon":"hang","pingHang":true,"s3Delay":7000,"shots":[6000,12000,25000],"click":true},
+{"name":"修後4_app轉址","site":"fix","url":"/gy-zhicui-entry/app/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,25000],"click":true},
+{"name":"修後5_舊app版SW已裝_換新版自動脫困","site":"fix","installOld":{"site":"main","url":"/gy-zhicui-entry/app/?src=pwa"},"url":"/gy-zhicui-entry/app/?src=pwa","favicon":"ok","s3Delay":2000,"shots":[3000,10000],"click":true},
+{"name":"修後6_舊app版SW已裝且探測被擋_換新版","site":"fix","installOld":{"site":"main","url":"/gy-zhicui-entry/app/?src=pwa"},"url":"/gy-zhicui-entry/app/?src=pwa","favicon":"abort","s3Delay":2000,"shots":[3000,15000],"click":true},
+{"name":"修後7_離線開啟再恢復","site":"fix","url":"/gy-zhicui-entry/?src=pwa","offlineAfterInstall":true,"reconnectAt":9000,"favicon":"ok","s3Delay":1000,"shots":[3000,20000],"click":true},
+{"name":"修後8_回滾後SW自動解除","site":"rollback","installOld":{"site":"fix","url":"/gy-zhicui-entry/?src=pwa"},"url":"/gy-zhicui-entry/","favicon":"ok","s3Delay":1000,"shots":[3000,8000]},
+{"name":"任務2_jx29對照_站3慢5秒","site":"jx29","url":"/gy-zhicui-entry/?src=pwa","favicon":"ok","s3Delay":5000,"shots":[300,1500,7000],"fcp":true,"click":true},
+{"name":"任務2_修後_站3慢5秒","site":"fix","url":"/gy-zhicui-entry/?src=pwa","favicon":"ok","s3Delay":5000,"shots":[300,1500,7000],"fcp":true,"click":true},
+{"name":"任務2_修後_站3快0點3秒","site":"fix","url":"/gy-zhicui-entry/?src=pwa","favicon":"ok","s3Delay":300,"shots":[400,1500],"fcp":true}
+]
