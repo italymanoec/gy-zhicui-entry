@@ -1,0 +1,142 @@
+[
+  {
+    "name": "entry-390-before",
+    "sizes": [
+      "13px",
+      "16px",
+      "18px",
+      "15px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "entry-390-after",
+    "sizes": [
+      "14px",
+      "16px",
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "entry-360-before",
+    "sizes": [
+      "13px",
+      "16px",
+      "18px",
+      "15px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "entry-360-after",
+    "sizes": [
+      "14px",
+      "16px",
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "entry-360-20-before",
+    "sizes": [
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "entry-360-20-after",
+    "sizes": [
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": false
+  },
+  {
+    "name": "app-390-before",
+    "sizes": [
+      "13px",
+      "16px",
+      "18px",
+      "15px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  },
+  {
+    "name": "app-390-after",
+    "sizes": [
+      "14px",
+      "16px",
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  },
+  {
+    "name": "app-360-before",
+    "sizes": [
+      "13px",
+      "16px",
+      "18px",
+      "15px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  },
+  {
+    "name": "app-360-after",
+    "sizes": [
+      "14px",
+      "16px",
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  },
+  {
+    "name": "app-360-20-before",
+    "sizes": [
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  },
+  {
+    "name": "app-360-20-after",
+    "sizes": [
+      "20px"
+    ],
+    "overflow": [],
+    "retry": true,
+    "ready": true,
+    "offline": true
+  }
+]

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>冠億199案 買賣預約單</title>
+<!-- 【令#1020_1653 APP化】PWA：可「加入主畫面」成 App 圖示（manifest＋icon）。只加這幾行 head，不加 service worker、不改下面開頁／換路邏輯。 -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="預約單">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- 【交接22】先連線 Apps Script 兩個網域（省 DNS／TLS 約 0.2–0.5 秒） -->
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<!-- 【令#1019_2255】站3 備援入口：不放在 script.google.com 上的靜態頁。
+     開頁先在框裡開主入口（正式 /exec?），等站3 前端回「booking-ready」訊息；15 秒沒回＝這台裝置主入口沒開出來：
+     ①自動換「不帶 Google 登入」的框（同一個 /exec?，iframe 加 credentialless）再等 15 秒；
+     ②再換備用路徑（/a/macros/gmail.com/s/同一ID/exec，同一個部署、不同網址樣式）再等 15 秒；
+     ③都沒開出來就顯示按鈕；
+     【交接22 1020 Jeffrey 裁】順序改成「不帶登入」先、主入口第二（站3 用 PIN，不靠 Google 登入；多帳號 Android 不必先白等主入口失敗）；
+     每條路等待 15→9 秒（站3 正常 2.4–5.7 秒開出；可用 ?wait= 調）。不認 credentialless 的舊 WebView 第一條就等於帶 cookie，和以前一樣。
+     【交接10】手機瀏覽器同時登入多個 Google 帳號時，Google 會把網址插成 /macros/u/N/s/…（出「找不到網頁」，沒到站3）。
+     框不帶 Google cookie 就不會被插：iPhone（Safari、LINE、Chrome 都是 WebKit）本來就擋第三方 cookie；Android Chrome 靠 credentialless。
+     每一次的結果（開出來／沒開出來、哪條路、幾秒、UA）都用不帶 cookie 的 POST 回報給站3 doPost，記在 Apps Script 執行項目。
+     本頁不存任何資料、不碰 PIN。 -->
+<style>
+  :root {
+    --bg:#f3f4f6; --fg:#1f2937; --red:#9e2a2b; --muted:#6b7280; --card:#fff;
+    --fs-page:1.25rem; --fs-section:1.125rem; --fs-body:1rem; --fs-small:.875rem; --fs-number:1.5rem;
+    --fw-normal:400; --fw-bold:700; --lh-body:1.5; --lh-heading:1.25;
+    --space-4:4px; --space-8:8px; --space-12:12px; --space-16:16px; --space-24:24px;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#111827; --fg:#f3f4f6; --muted:#9ca3af; --card:#1f2937; } }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif; font-size:var(--fs-body); font-weight:var(--fw-normal); line-height:var(--lh-body); }
+  #app { position:fixed; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
+  #panel { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; box-sizing:border-box; background:var(--bg); overflow-y:auto;
+    padding:max(var(--space-16),env(safe-area-inset-top,0px)) max(var(--space-16),env(safe-area-inset-right,0px)) max(var(--space-16),env(safe-area-inset-bottom,0px)) max(var(--space-16),env(safe-area-inset-left,0px)); }
+  #panel[hidden], #loading[hidden] { display:none; }
+  .card { box-sizing:border-box; flex-shrink:0; margin-block:auto; background:var(--card); border-radius:var(--space-12); padding:var(--space-16); max-width:420px; width:100%; box-shadow:0 2px 12px rgba(0,0,0,.08); overflow-wrap:anywhere; }
+  h1 { font-size:var(--fs-page); font-weight:var(--fw-bold); line-height:var(--lh-heading); margin:0 0 var(--space-8); color:var(--red); }
+  p { margin:var(--space-8) 0; line-height:var(--lh-body); font-size:var(--fs-body); text-wrap:pretty; }
+  .muted { color:var(--muted); font-size:var(--fs-small); }
+  #foot:empty { display:none; }
+  button, a.btn { display:block; width:100%; min-height:48px; box-sizing:border-box; margin-top:var(--space-12); padding:var(--space-12); border-radius:var(--space-8); border:0; font:inherit; font-size:var(--fs-body); font-weight:var(--fw-normal); line-height:var(--lh-body); text-align:center; text-decoration:none; cursor:pointer; touch-action:manipulation; overflow-wrap:anywhere; }
+  .pri { background:var(--red); color:#fff; }
+  button.sec, a.btn.sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+  #loading { position:fixed; z-index:10; left:50%; top:calc(env(safe-area-inset-top,0px) + var(--space-12)); transform:translateX(-50%); pointer-events:none; padding:var(--space-4) var(--space-16); border-radius:var(--space-12); background:rgba(17,24,39,.72); color:#fff; font-size:var(--fs-small); line-height:var(--lh-body); white-space:nowrap; opacity:0; animation:gyLoading .2s ease-out .6s forwards; }
+  @keyframes gyLoading { to { opacity:1; } }
+</style>
+</head>
+<body>
+<div id="loading" role="status" aria-live="polite">載入中…</div>
+<iframe id="app" title="冠億199案 買賣預約單" allow="clipboard-write"></iframe>
+<div id="panel">
+  <div class="card">
+    <h1 id="ttl">冠億199案 買賣預約單</h1>
+    <p id="msg">開啟中…</p>
+    <div id="btns" hidden>
+      <button class="pri" id="bRetry">重新開啟</button>
+      <a class="btn sec" id="bTab" target="_blank" rel="noopener">在新分頁開主入口</a>
+      <a class="btn sec" id="bAlt" target="_blank" rel="noopener">在新分頁開備用路徑</a>
+    </div>
+    <p class="muted" id="foot"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var ID = 'AKfycbwyKc5HUwAf2TBOQWF9CqOfbNkboNkuzdDqADEQqfqHbp2o9WGIdJpX1kpOi8ZRlpd8';
+  var qs = new URLSearchParams(location.search);
+  /* 測試用：?probe=<部署ID> 換第一條路（只給演練與回歸用，例如指到已封存的測試部署，驗「沒開出來」那條路） */
+  var PROBES = { 'AKfycbyGwGEWvWezHcFOzGWXQ7m6-TrlqcvmgC8aEkNwJTbqnoD-X5Hkcriz4oDZRfESA-yBZQ': 1 };   /* 演練用：只收這一個「已封存」測試部署（必出 Google 錯誤頁），防被拿去框別人的程式 */
+  var MAINID = PROBES[qs.get('probe')] ? qs.get('probe') : ID;
+  var ROUTES = [
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?', 無cookie: true },
+    { 名: '主入口', url: 'https://script.google.com/macros/s/' + ID + '/exec?' },
+    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
+  ];
+  var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
+  var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
+  var app = document.getElementById('app'), panel = document.getElementById('panel');
+  var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
+  var loading = document.getElementById('loading');
+  var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
+  document.getElementById('bTab').href = ROUTES[1].url;
+  document.getElementById('bAlt').href = ROUTES[2].url;
+  /* credentialless 要在導航前就掛上，所以每換一條路都換一個新框 */
+  function frame(nocookie) {
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = app.title; f.setAttribute('allow', 'clipboard-write');
+    if (nocookie) f.setAttribute('credentialless', '');
+    app.parentNode.replaceChild(f, app); app = f;
+  }
+
+  function report(結果, extra) {
+    var body = JSON.stringify(Object.assign({
+      頁: '備援入口', 結果: 結果, 路徑: ROUTES[idx] ? ROUTES[idx].名 : '', 秒: ((Date.now() - t0) / 1000).toFixed(1),
+      次: sess, ua: navigator.userAgent, 語系: navigator.language, 寬: innerWidth, 高: innerHeight, 時: new Date().toISOString(),
+      測試: MAINID !== ID
+    }, extra || {}));
+    try { fetch(BEACON, { method: 'POST', mode: 'no-cors', credentials: 'omit', body: body, keepalive: true }); } catch (e) {}
+  }
+  function open(i) {
+    idx = i; ready = false; t0 = Date.now();
+    panel.hidden = false; btns.hidden = true; loading.hidden = false;
+    msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
+    foot.textContent = '';
+    frame(!!ROUTES[i].無cookie);
+    app.src = ROUTES[i].url;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (ready) return;
+      report('沒開出來');
+      if (i + 1 < ROUTES.length) return open(i + 1);
+      msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
+      foot.textContent = '紀錄編號 ' + sess;
+      btns.hidden = false; loading.hidden = true;
+    }, WAIT_MS);
+  }
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || d.gy !== 'booking-ready' || ready) return;
+    if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(new URL(ev.origin).hostname)) return;
+    ready = true; clearTimeout(timer); panel.hidden = true; loading.hidden = true;
+    report('開出來');
+  });
+  document.getElementById('bRetry').onclick = function () { open(0); };
+  /* 測試用：?route=N 從第 N 條路開始（演練用，正常使用不帶） */
+  open(Math.min(ROUTES.length - 1, Math.max(0, Number(qs.get('route')) || 0)));
+})();
+</script>
+</body>
+</html>
