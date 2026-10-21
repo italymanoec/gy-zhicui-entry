@@ -77,10 +77,11 @@
   /* 測試用：?probe=<部署ID> 換第一條路（只給演練與回歸用，例如指到已封存的測試部署，驗「沒開出來」那條路） */
   var PROBES = { 'AKfycbyGwGEWvWezHcFOzGWXQ7m6-TrlqcvmgC8aEkNwJTbqnoD-X5Hkcriz4oDZRfESA-yBZQ': 1 };   /* 演練用：只收這一個「已封存」測試部署（必出 Google 錯誤頁），防被拿去框別人的程式 */
   var MAINID = PROBES[qs.get('probe')] ? qs.get('probe') : ID;
+  /* 【交接32c】三條路都帶 src=app：站3 看到就把頁首換成「冠億業務通」；站3 沒更新前多一個參數不影響。結尾留 & 方便日後再接參數 */
   var ROUTES = [
-    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?', 無cookie: true },
-    { 名: '主入口', url: 'https://script.google.com/macros/s/' + ID + '/exec?' },
-    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?src=app&', 無cookie: true },
+    { 名: '主入口', url: 'https://script.google.com/macros/s/' + ID + '/exec?src=app&' },
+    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?src=app&' }
   ];
   var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
   var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
