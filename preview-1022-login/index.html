@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>冠億199案 買賣預約單</title>
+<!-- 【令#1020_1653 APP化】PWA：可「加入主畫面」成 App 圖示（manifest＋icon）。只加這幾行 head，不加 service worker、不改下面開頁／換路邏輯。 -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="預約單">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- 【交接22】先連線 Apps Script 兩個網域（省 DNS／TLS 約 0.2–0.5 秒） -->
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<!-- 【令#1019_2255】站3 備援入口：不放在 script.google.com 上的靜態頁。
+     開頁先在框裡開主入口（正式 /exec?），等站3 前端回「booking-ready」訊息；15 秒沒回＝這台裝置主入口沒開出來：
+     ①自動換「不帶 Google 登入」的框（同一個 /exec?，iframe 加 credentialless）再等 15 秒；
+     ②再換備用路徑（/a/macros/gmail.com/s/同一ID/exec，同一個部署、不同網址樣式）再等 15 秒；
+     ③都沒開出來就顯示按鈕；
+     【交接22 1020 Jeffrey 裁】順序改成「不帶登入」先、主入口第二（站3 用 PIN，不靠 Google 登入；多帳號 Android 不必先白等主入口失敗）；
+     每條路等待 15→9 秒（站3 正常 2.4–5.7 秒開出；可用 ?wait= 調）。不認 credentialless 的舊 WebView 第一條就等於帶 cookie，和以前一樣。
+     【交接10】手機瀏覽器同時登入多個 Google 帳號時，Google 會把網址插成 /macros/u/N/s/…（出「找不到網頁」，沒到站3）。
+     框不帶 Google cookie 就不會被插：iPhone（Safari、LINE、Chrome 都是 WebKit）本來就擋第三方 cookie；Android Chrome 靠 credentialless。
+     每一次的結果（開出來／沒開出來、哪條路、幾秒、UA）都用不帶 cookie 的 POST 回報給站3 doPost，記在 Apps Script 執行項目。
+     本頁不存任何資料、不碰 PIN。 -->
+<style>
+  :root {
+    --bg:#f3f4f6; --fg:#1f2937; --red:#9e2a2b; --muted:#6b7280; --card:#fff;
+    --fs-page:1.25rem; --fs-section:1.125rem; --fs-body:1rem; --fs-small:.875rem; --fs-number:1.5rem;
+    --fw-normal:400; --fw-bold:700; --lh-body:1.5; --lh-heading:1.25;
+    --space-4:4px; --space-8:8px; --space-12:12px; --space-16:16px; --space-24:24px;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#111827; --fg:#f3f4f6; --muted:#9ca3af; --card:#1f2937; } }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif; font-size:var(--fs-body); font-weight:var(--fw-normal); line-height:var(--lh-body); }
+  #app { position:fixed; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
+  #panel { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; box-sizing:border-box; background:var(--bg); overflow-y:auto;
+    padding:max(var(--space-16),env(safe-area-inset-top,0px)) max(var(--space-16),env(safe-area-inset-right,0px)) max(var(--space-16),env(safe-area-inset-bottom,0px)) max(var(--space-16),env(safe-area-inset-left,0px)); }
+  #panel[hidden], #loading[hidden] { display:none; }
+  .card { box-sizing:border-box; flex-shrink:0; margin-block:auto; background:var(--card); border-radius:var(--space-12); padding:var(--space-16); max-width:420px; width:100%; box-shadow:0 2px 12px rgba(0,0,0,.08); overflow-wrap:anywhere; }
+  h1 { font-size:var(--fs-page); font-weight:var(--fw-bold); line-height:var(--lh-heading); margin:0 0 var(--space-8); color:var(--red); }
+  p { margin:var(--space-8) 0; line-height:var(--lh-body); font-size:var(--fs-body); text-wrap:pretty; }
+  .muted { color:var(--muted); font-size:var(--fs-small); }
+  #foot:empty { display:none; }
+  button, a.btn { display:block; width:100%; min-height:48px; box-sizing:border-box; margin-top:var(--space-12); padding:var(--space-12); border-radius:var(--space-8); border:0; font:inherit; font-size:var(--fs-body); font-weight:var(--fw-normal); line-height:var(--lh-body); text-align:center; text-decoration:none; cursor:pointer; touch-action:manipulation; overflow-wrap:anywhere; }
+  .pri { background:var(--red); color:#fff; }
+  button.sec, a.btn.sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+#loading{position:fixed;inset:0;z-index:2147483646;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:8vh;box-sizing:border-box;text-align:center;background:#f7f2e8;background:radial-gradient(ellipse at 50% 38%,#fff 0%,#faf8f1 55%,#efead9 100%);color:#5b6a26;pointer-events:auto;opacity:1;transition:opacity .3s}#loading[hidden]{display:none}#loading .gyArt{visibility:hidden}#loading.show .gyArt{visibility:visible}#loading .art{width:min(60vw,264px);aspect-ratio:1;margin:0 auto}#loading .art svg{display:block;width:100%;height:100%}#loading.show .breathe{animation:gyK3_br 2.4s ease-in-out 3.6s infinite}#loading.show .bgc{animation:gyK3_bg .8s cubic-bezier(.3,.7,.4,1) both}#loading.show .tk{animation:gyK3_tk .9s cubic-bezier(.4,0,.2,1) calc(var(--d) * 2) both}#loading.show .lf{animation:gyK3_lf .5s cubic-bezier(.3,1.7,.55,1) calc(var(--d) * 2.5) both,gyK3_lp 2.4s ease-in-out calc(var(--d) * 2.5 + .6s) infinite}#loading .brand{position:relative;font-size:40px;font-weight:700;letter-spacing:.22em;padding-left:.22em;margin-top:18px;line-height:1.25;overflow:hidden}#loading .brand:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#f1cc71c0 50%,transparent 75%);transform:translateX(-150%)}#loading.show .brand:after{animation:gyK3_sw 2.4s ease-in-out 1s infinite}#loading .phase{margin-top:16px;font-size:14px;line-height:1.5;color:#6b735a}@keyframes gyK3_bg{from{clip-path:circle(45% at 50% 50%)}to{clip-path:circle(72% at 50% 50%)}}@keyframes gyK3_tk{from{clip-path:inset(40% 0 0 0)}to{clip-path:inset(0 0 0 0)}}@keyframes gyK3_lf{0%{opacity:.2;transform:scale(.3)}40%{opacity:1}100%{opacity:1;transform:scale(1)}}@keyframes gyK3_ap{from{opacity:0}to{opacity:1}}@keyframes gyK3_sw{to{transform:translateX(150%)}}@keyframes gyK3_br{50%{transform:scale(1.03)}}@keyframes gyK3_lp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(.9)}}@media(prefers-reduced-motion:reduce){#loading.show .breathe,#loading.show .bgc,#loading.show .tk,#loading.show .lf,#loading.show .brand,#loading.show .brand:after{animation:none}#loading .bgc,#loading .tk{clip-path:none}#loading .lf{opacity:1;transform:none}#loading .brand{opacity:1}#loading .brand:after{display:none}}#loading .gyFailure{display:none;font-size:14px;color:#1f2937}#loading.failed .gyFailure{display:block}#loading.failed .phase{display:none}#loading.finished{opacity:0;pointer-events:none}#loading button{min-height:44px;margin:4px;padding:8px 16px;font-size:14px}@media print{#loading,#loading[hidden],#loading.show{display:none}}
+#loading{opacity:0;pointer-events:none}#loading.show{opacity:1}#loading .gyArt{visibility:visible}
+</style>
+</head>
+<body>
+<div id="loading" hidden><div class="art breathe"><svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect class="bgc" width="512" height="512" fill="#748535"/><g fill="#fff"><path class="tk" style="--d:.15s" d="M146 151.5c18.5 37 34.5 95 42.5 155.5 4.5 34.5 4.5 76.5-.5 104-2.5 14.5-8.5 34-13.5 44.5-5 9.5-14 22-20.5 28.5l-7 7 66.5 0c36.5 0 66.5 0 66.5-.5 0-.5-1-2-2-4.5-13.5-26.5-10.5-81 8.5-169.5 1-4 1.5-7.5 1.5-7.5 0-.5-2-1-4-1-3.5 0-4-.5-3.5-2 .5-.5 6-16 12-34 6.5-17.5 12-33 13-33.5 .5-.5 2-4.5 3.5-9 1-4.5 2.5-9.5 3-11 6.5-23.5 20.5-62 26-72 1.5-3 3-5.5 3-6 0-.5-6.5-.5-14-.5l-14.5 0 0 5.5c-.5 11.5-2.5 18.5-20.5 67-5 13.5-9 25.5-8.5 26 0 1-4 16-9.5 34-5.5 17.5-10.5 33-10.5 33.5-.5 1.5-1.5 2-3.5 2-2.5 0-3 .5-4 3.5-.5 2-1.5 3.5-2 3-.5-1-5.5-13-14.5-36-2.5-6.5-9-22.5-14-35.5-5-13-12.5-32.5-17-43-4-10.5-8.5-22-10-25.5-4-10.5-8.5-25-9.5-29.5l-.5-4.5-24-.5-24 0 5.5 11.5z"/><path class="tk" style="--d:.4s;--t:.35s" d="M282.5 239c-.5 .5-4.5 1-9.5 1l-8.5 0 5 10 5 10-2 5.5c-2 5.5-14 39-15 41.5-.5 1.5 0 2 3 2 2.5 0 3.5-.5 4-2 0-.5 5-16 10.5-33.5 5.5-18 10-33 10-34 0-1.5-1.5-2-2.5-.5zM291 272.5c-6.5 19-12 35-12 35.5 0 .5 2 1 4.5 1 3 0 4.5-.5 5-2 .5-1.5 .5-1.5 1.5 .5 2.5 4 12.5 41.5 18 67 .5 2 1.5 7 2 11 .5 4 1.5 9 2 12 2 10.5 4 30.5 4 42.5 0 21-3.5 35.5-10.5 46l-3.5 5 31 0c17 0 31-.5 31-1 0-.5-1-2.5-2-4.5-11-23.5-3.5-88 21-174 9-33 15.5-51 21.5-63.5 2-4 3.5-7.5 3.5-7.5 0-.5-4.5-.5-10.5-.5l-10 0-.5 7c-.5 8-3 15.5-15.5 48.5-3.5 10-7.5 20-8 22-1.5 4-14 39-16.5 45-1 3-1.5 2.5-9.5-18-4.5-11.5-13-33-19-48-6-15-12-30.5-13.5-35l-3-7.5 2-7.5c2.5-8.5 2.5-8.5 .5-8.5-.5 0-5.5 12-13.5 34.5z"/><path class="lf" style="--d:0.50s;transform-origin:237px 238px" d="M230 204c-4.5 5-5.5 13.5-2 22 1.5 4 4 7.5 9 12.5 7 7 14 12 14.5 11.5 1-1.5 3.5-16.5 3.5-22 0-8-4-17-10-22.5-3.5-3-4.5-3.5-8.5-3.5-3 0-4.5 .5-6.5 2z"/><path class="lf" style="--d:0.54s;transform-origin:263px 214px" d="M266.5 159.5c-4 1.5-7 5-9.5 10.5-3.5 8-4 14.5-2.5 22 1.5 8.5 9 24.5 10.5 24 2.5-1 12.5-13.5 16-20 3-6 3.5-7 3.5-15.5 0-7.5-.5-10-2.5-14-2.5-5-7-8.5-10.5-8.5-1 0-3.5 .5-5 1.5z"/><path class="lf" style="--d:0.58s;transform-origin:241px 150px" d="M242.5 117c-3.5 1-8.5 3.5-11.5 5.5-8 5-19.5 16-18.5 17 1 2 17 8.5 25 10 12 3 23.5 0 32-7.5 6-6 8-10 6.5-14.5-2.5-6-7-9.5-16-11.5-6-1.5-10.5-1-17.5 1z"/><path class="lf" style="--d:0.62s;transform-origin:148px 250px" d="M138 236.5c-11.5 4-28 13-35 18.5-21 15.5-29.5 50.5-15 61.5 12 8.5 31.5 1.5 46-16.5 6-7.5 9.5-15.5 12-28 3-13 4-39 2-39-1 0-5.5 1.5-10 3.5z"/><path class="lf" style="--d:0.66s;transform-origin:129px 208px" d="M65.5 192c-9.5 2.5-17 7-22.5 12.5-9 9.5-9 18-.5 26 7 7 13.5 9 28.5 9 11.5 0 13 0 19-2.5 10.5-4.5 20-11 35-24 5-5 5.5-5 3.5-6.5-4-3-25-11.5-34-14-10.5-3-20.5-3-29-.5z"/><path class="lf" style="--d:0.70s;transform-origin:121px 163px" d="M43.5 128c-10.5 3.5-15 7.5-18 14.5-6.5 15.5 18.5 36.5 44.5 36.5 4.5 0 11-.5 14.5-1.5 13.5-2.5 37.5-12 37.5-14.5 0-1-15-15.5-22.5-21.5-9.5-7-18.5-12-26-14-8.5-2-23.5-2-30 .5z"/><path class="lf" style="--d:0.74s;transform-origin:129px 118px" d="M69 49c-3.5 1.5-8 6-9.5 10-6 13.5 8 38.5 26 47.5 9 5 27 10 40 12l4.5 .5 0-3c0-7.5-7-30-12.5-41-7-13.5-25-26-39.5-26.5-3.5-.5-7.5 0-9 .5z"/><path class="lf" style="--d:0.78s;transform-origin:165px 108px" d="M149 27c-8 8-12 26-9 39 2.5 10 12.5 27.5 23 40l2.5 3.5 3.5-6c8.5-14 14-27 16-37.5 2.5-13-3.5-31.5-12.5-40-4.5-4-4.5-4-11.5-4l-7.5 0-4.5 5z"/><path class="lf" style="--d:0.82s;transform-origin:196px 121px" d="M220.5 59c-4 2-8 5-11.5 9-9.5 10-13 19.5-13.5 40.5l-1 13.5 2.5-.5c12.5-4 27-11.5 34.5-18.5 8.5-8 15.5-23.5 14-32.5-2-13.5-11.5-18-25-11.5z"/><path class="lf" style="--d:0.86s;transform-origin:310px 126px" d="M286 60.5c-10 6.5-10.5 27.5-1 42 1.5 3 5.5 7.5 8 10 5.5 5 18.5 15.5 20 15.5 .5 0 3-8.5 5-19 .5-3 1-10 1-15-.5-8-1-10.5-3.5-16-5.5-11.5-15.5-20-23-20-1.5 0-4.5 1-6.5 2.5z"/><path class="lf" style="--d:0.90s;transform-origin:336px 129px" d="M344 68c-4.5 2-9 7.5-12.5 14.5-3 6-3.5 8-3.5 15.5 0 4.5 .5 10.5 1.5 14 2.5 8 5.5 17 6.5 17.5 1.5 1 18.5-17.5 22-23.5 3-6 3.5-7.5 4-15.5 0-8.5 0-10-2.5-15-3.5-7.5-9-10-15.5-7.5z"/><path class="lf" style="--d:0.94s;transform-origin:346px 158px" d="M370.5 115c-8.5 4.5-12 7.5-16 15-3.5 6.5-7 17-8 25l-.5 4 5-.5c8-1 21-5 27-8.5 6-3.5 13.5-13 15.5-20.5 2-6.5 2-7-.5-11.5-2.5-5-4.5-6-11.5-6-4.5 0-7.5 1-11 3z"/><path class="lf" style="--d:0.98s;transform-origin:350px 249px" d="M324.5 220.5c-4 2.5-5.5 4.5-5.5 8.5 0 7 8 16 17.5 19.5 2.5 1 8.5 1.5 16 1.5 10.5 0 11.5 0 11.5-2 0-2.5-7-14-12.5-19.5-8-8-20-11.5-27-8z"/><path class="lf" style="--d:1.02s;transform-origin:375px 233px" d="M352.5 181.5c-1.5 1.5-3 4.5-3.5 8-2 9.5 .5 19.5 7.5 28 3.5 4.5 18.5 16.5 20 16.5 2 0 4.5-15 5-24.5 0-9.5-1.5-15-6.5-21.5-6-9-17-12-22.5-6.5z"/><path class="lf" style="--d:1.06s;transform-origin:350px 300px" d="M343.5 267.5c-6.5 2.5-12 12.5-13 23-1 6 1 14 5.5 23 3 5.5 10 16.5 10.5 16.5 1 0 9-13 12-18.5 5.5-12 6.5-19 4-28.5-4-12.5-11.5-19-19-15.5z"/><path class="lf" style="--d:1.10s;transform-origin:403px 231px" d="M410.5 167.5c-6.5 2.5-13 13.5-15.5 24.5-1 4-1 7 0 12 1.5 9 7.5 28 9 28 .5 0 5-4 9.5-9.5 6-6 10.5-11.5 13-16.5 3.5-6.5 4-8.5 4-16 .5-7 0-9.5-1.5-14-4-8.5-11-12-18.5-8.5z"/><path class="lf" style="--d:1.14s;transform-origin:423px 244px" d="M463.5 202c-11.5 2.5-20 8-27 17.5-6 8.5-14.5 24-13 25 0 .5 6 1 13 1.5 19.5 .5 30-2.5 40.5-12.5 6-5.5 10-13 10-18.5 0-4.5-3-9.5-7-11.5-3.5-2-11.5-2.5-16.5-1.5z"/><path class="lf" style="--d:1.18s;transform-origin:412px 277px" d="M443 261.5c-7 2-25 10.5-29.5 14-2 1.5-2 1.5 0 3.5 3 3.5 17.5 12.5 24.5 16 10 4.5 17.5 5.5 25.5 4 12.5-2 20-7 23-14.5 1.5-4 1.5-5 .5-7.5-3.5-8-11.5-13.5-23-16.5-8.5-2-12-2-21 1z"/><path class="lf" style="--d:1.22s;transform-origin:396px 307px" d="M415 303.5c-6 .5-19 4-19 4.5 0 1 6.5 10.5 11 16.5 6 7 14 14 19 16 6 3 17 4.5 23.5 3.5 6.5-1.5 12-5.5 13.5-11 1-3.5 1-4.5-1.5-9.5-3-6.5-10-13-18-16.5-5.5-2.5-8-3-15.5-3.5-5.5 0-11 0-13 0z"/></g></svg></div><div class="brand">冠億建設</div><div class="phase" role="status" aria-live="polite">連線中</div></div>
+<iframe id="app" title="冠億199案 買賣預約單" allow="clipboard-write"></iframe>
+<div id="panel">
+  <div class="card">
+    <h1 id="ttl">冠億199案 買賣預約單</h1>
+    <p id="msg">開啟中…</p>
+    <div id="btns" hidden>
+      <button class="pri" id="bRetry">重新開啟</button>
+      <a class="btn sec" id="bTab" target="_blank" rel="noopener">在新分頁開主入口</a>
+      <a class="btn sec" id="bAlt" target="_blank" rel="noopener">在新分頁開備用路徑</a>
+    </div>
+    <p class="muted" id="foot"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var ID = 'AKfycbwLZ83yIWq8B_kMZoisTOhFQkXKsmGS_3RraBcBP4hzyzDL5ykdyqY0NctSzTM2n_Gk';
+  var qs = new URLSearchParams(location.search);
+  /* 測試用：?probe=<部署ID> 換第一條路（只給演練與回歸用，例如指到已封存的測試部署，驗「沒開出來」那條路） */
+  var PROBES = { 'AKfycbyGwGEWvWezHcFOzGWXQ7m6-TrlqcvmgC8aEkNwJTbqnoD-X5Hkcriz4oDZRfESA-yBZQ': 1 };   /* 演練用：只收這一個「已封存」測試部署（必出 Google 錯誤頁），防被拿去框別人的程式 */
+  var MAINID = PROBES[qs.get('probe')] ? qs.get('probe') : ID;
+  var ROUTES = [
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + MAINID + '/exec?', 無cookie: true },
+    { 名: '主入口', url: 'https://script.google.com/macros/s/' + ID + '/exec?' },
+    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
+  ];
+  var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
+  var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
+  var app = document.getElementById('app'), panel = document.getElementById('panel');
+  var msg = document.getElementById('msg'), btns = document.getElementById('btns'), foot = document.getElementById('foot');
+  var loading = document.getElementById('loading');
+  var animationTimers = [], fadeTimer;
+  function hideAnimation(fade) {
+    animationTimers.forEach(clearTimeout); animationTimers = [];
+    clearTimeout(fadeTimer); loading.classList.remove('show');
+    if (fade) fadeTimer = setTimeout(function () { loading.hidden = true; }, 300);
+    else loading.hidden = true;
+  }
+  function startAnimation() {
+    hideAnimation(false);
+    var phase = loading.querySelector('.phase'); phase.textContent = '連線中';
+    animationTimers.push(setTimeout(function () { loading.hidden = false; void loading.offsetWidth; loading.classList.add('show'); }, 0));
+    animationTimers.push(setTimeout(function () { phase.textContent = '讀取銷控'; }, 1000));
+    animationTimers.push(setTimeout(function () { phase.textContent = '準備畫面'; }, 1800));
+  }
+  var idx = 0, t0 = 0, timer = null, ready = false, sess = Math.random().toString(36).slice(2, 10);
+  document.getElementById('bTab').href = ROUTES[1].url;
+  document.getElementById('bAlt').href = ROUTES[2].url;
+  /* credentialless 要在導航前就掛上，所以每換一條路都換一個新框 */
+  function frame(nocookie) {
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = app.title; f.setAttribute('allow', 'clipboard-write');
+    if (nocookie) f.setAttribute('credentialless', '');
+    app.parentNode.replaceChild(f, app); app = f;
+  }
+
+  function report(結果, extra) {
+    var body = JSON.stringify(Object.assign({
+      頁: '備援入口', 結果: 結果, 路徑: ROUTES[idx] ? ROUTES[idx].名 : '', 秒: ((Date.now() - t0) / 1000).toFixed(1),
+      次: sess, ua: navigator.userAgent, 語系: navigator.language, 寬: innerWidth, 高: innerHeight, 時: new Date().toISOString(),
+      測試: MAINID !== ID
+    }, extra || {}));
+    try { fetch(BEACON, { method: 'POST', mode: 'no-cors', credentials: 'omit', body: body, keepalive: true }); } catch (e) {}
+  }
+  function open(i) {
+    idx = i; ready = false; t0 = Date.now();
+    panel.hidden = i === 0; btns.hidden = i === 0;
+    startAnimation(); panel.hidden = true;
+    msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
+    foot.textContent = '';
+    frame(!!ROUTES[i].無cookie);
+    app.src = ROUTES[i].url;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (ready) return;
+      report('沒開出來');
+      if (i + 1 < ROUTES.length) return open(i + 1);
+      msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
+      foot.textContent = '紀錄編號 ' + sess;
+      panel.hidden = false; btns.hidden = false; hideAnimation(false);
+    }, WAIT_MS);
+  }
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || d.gy !== 'booking-ready' || ready) return;
+    if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(new URL(ev.origin).hostname)) return;
+    ready = true; clearTimeout(timer); panel.hidden = true; hideAnimation(true);
+    report('開出來');
+  });
+  document.getElementById('bRetry').onclick = function () { open(0); };
+  /* 測試用：?route=N 從第 N 條路開始（演練用，正常使用不帶） */
+  open(Math.min(ROUTES.length - 1, Math.max(0, Number(qs.get('route')) || 0)));
+})();
+</script>
+</body>
+</html>
