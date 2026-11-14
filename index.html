@@ -107,8 +107,13 @@
   function lastSet(o){ ls(function(){ o ? localStorage.setItem(LK, JSON.stringify(o)) : localStorage.removeItem(LK); }); }
 
   /* ── 畫面（只用 textContent：資料一律當文字，不組 HTML） ── */
+  var 已畫 = false;   /* 畫面上已經有數字了沒：決定等一下開框時要不要蓋「開啟中…」那張卡片 */
   function paint(d, 舊) {
+    已畫 = true;
     boot.hidden = false;
+    /* 數字回來的時候，框可能已經在底下載了（保險 2.5 秒）＆「開啟中…」那張卡片蓋在上面 ⇒ 收掉它，讓數字看得見。
+       真畫面已經出來（ready）或三條路都沒開出來（放棄，卡片上有重試鈕）這兩種情況不收。 */
+    if (!ready && !放棄) panel.hidden = true;
     $('who').textContent = d.帳號 || '';
     $('n').textContent = (d.待辦 === null || d.待辦 === undefined) ? '—' : d.待辦;
     $('n').classList.toggle('ph', d.待辦 === null || d.待辦 === undefined);
@@ -131,7 +136,7 @@
   ];
   var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
   var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
-  var idx = 0, t0 = 0, timer = null, ready = false, 框起跑 = false, sess = Math.random().toString(36).slice(2, 10);
+  var idx = 0, t0 = 0, timer = null, ready = false, 放棄 = false, 框起跑 = false, sess = Math.random().toString(36).slice(2, 10);
   $('bTab').href = ROUTES[1].url; $('bAlt').href = ROUTES[2].url;
 
   function frame(nocookie) {
@@ -161,7 +166,7 @@
       if (ready) return;
       report('沒開出來');
       if (i + 1 < ROUTES.length) return open(i + 1, showPanel);
-      mark('三條都沒開出來');
+      mark('三條都沒開出來'); 放棄 = true;
       panel.hidden = false; boot.hidden = true;
       msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
       foot.textContent = '紀錄編號 ' + sess;
@@ -172,7 +177,9 @@
   function 落回(why) {
     if (框起跑) return;
     mark('落回'); MK.落回因 = why;
-    open(0, !上次);
+    /* 已經畫出數字了就不要蓋「開啟中…」那張卡片——數字要一直看得到，直到真畫面出來。
+       （判準用「畫面上有沒有數字」，不是「有沒有上次的快取」：剛登入第一次開是先拿到新值才落回的。） */
+    open(0, !已畫);
   }
 
   /* 這則訊息是不是從「我們自己開的那個框」裡面發出來的：
