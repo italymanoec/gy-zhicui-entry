@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>冠億199案 買賣預約單</title>
+<!-- 【長單_20261114_1112_6】靜態開頁（開頁畫面搬出 Google 的第一段）。
+     這一頁做的事只有一件：**在等 Apps Script 之前，先把「今天幾件待辦」與戰情列那一行畫出來。**
+     ・有上次的數字 ⇒ 不等網路，當場畫（localStorage）。
+     ・有登入憑證 ⇒ 一支 POST 向站3 資料口（doPost?sapi=1）要新值，回來再覆蓋。
+     ・沒有憑證／憑證失效／資料口不通 ⇒ **照舊走 iframe 那三條路**（下面的 ROUTES 與 index.html 一字不差），
+       使用者看到的就是現行畫面（含登入頁），不會白屏。
+     本頁不存任何客戶資料、不碰 PIN、沒有任何金鑰與表編號；唯一的內部網址就是資料口（站3 /exec）。
+     PWA 與 icon 走絕對路徑 ⇒ 這一份檔放 /boot/ 或放根目錄都能用（之後升正式＝把這一份蓋到 index.html）。 -->
+<link rel="manifest" href="/gy-zhicui-entry/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/gy-zhicui-entry/icon-192.png">
+<link rel="apple-touch-icon" href="/gy-zhicui-entry/apple-touch-icon.png">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="預約單">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<style>
+  :root { --bg:#f3f4f6; --fg:#1f2937; --red:#9e2a2b; --muted:#6b7280; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#111827; --fg:#f3f4f6; --muted:#9ca3af; --card:#1f2937; } }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family:-apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+  #app { position:fixed; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
+  /* 靜態開頁：疊在最上面，站3 開出來（booking-ready）就收掉 */
+  #boot { position:fixed; inset:0; z-index:5; background:var(--bg); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  #boot[hidden] { display:none; }
+  #bhead { background:var(--red); color:#fff; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+  #bhead b { font-size:16px; } #bhead span { font-size:13px; opacity:.9; }
+  #todo { background:var(--card); margin:10px; border-radius:12px; padding:14px; }
+  #todo .n { font-size:28px; color:var(--red); font-weight:700; }
+  #war { background:var(--card); margin:0 10px 10px; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.7; white-space:pre-wrap; }
+  .age { font-size:12px; color:var(--muted); margin-top:6px; }
+  .ph { color:var(--muted); font-weight:400; }
+  #panel { position:fixed; inset:0; z-index:6; display:flex; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; background:var(--bg); }
+  #panel[hidden] { display:none; }
+  .card { background:var(--card); border-radius:12px; padding:20px; max-width:420px; width:100%; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size:18px; margin:0 0 8px; color:var(--red); }
+  p { margin:6px 0; line-height:1.6; font-size:15px; }
+  .muted { color:var(--muted); font-size:13px; }
+  button, a.btn { display:block; width:100%; box-sizing:border-box; margin-top:10px; padding:12px; border-radius:8px; border:0; font-size:16px; text-align:center; text-decoration:none; cursor:pointer; }
+  .pri { background:var(--red); color:#fff; }
+  .sec { background:transparent; color:var(--fg); border:1px solid var(--muted); }
+  #loading { position:fixed; z-index:10; left:50%; top:calc(env(safe-area-inset-top, 0px) + 10px); transform:translateX(-50%); pointer-events:none;
+             padding:4px 14px; border-radius:999px; background:rgba(17,24,39,.72); color:#fff; font-size:13px; line-height:1.6; white-space:nowrap;
+             opacity:0; animation:gyLoading .2s ease-out .6s forwards; }
+  #loading[hidden] { display:none; }
+  @keyframes gyLoading { to { opacity:1; } }
+</style>
+</head>
+<body>
+<div id="loading" role="status" aria-live="polite">載入中…</div>
+<iframe id="app" title="冠億199案 買賣預約單" allow="clipboard-write"></iframe>
+
+<!-- 首屏骨架：純 HTML，不等 JS、不等網路 -->
+<div id="boot" hidden>
+  <div id="bhead"><b>冠億199案 買賣預約單</b><span id="who">—</span></div>
+  <div id="todo">今天 <span class="n ph" id="n">—</span> 件待辦<div class="age" id="age">讀取中…</div></div>
+  <div id="war" class="ph">戰情列讀取中…</div>
+</div>
+
+<div id="panel" hidden>
+  <div class="card">
+    <h1 id="ttl">冠億199案 買賣預約單</h1>
+    <p id="msg">開啟中…</p>
+    <div id="btns" hidden>
+      <button class="pri" id="bRetry">重新開啟</button>
+      <a class="btn sec" id="bTab" target="_blank" rel="noopener">在新分頁開主入口</a>
+      <a class="btn sec" id="bAlt" target="_blank" rel="noopener">在新分頁開備用路徑</a>
+    </div>
+    <p class="muted" id="foot"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ── 量測刻度：每個「畫面上看得到的變化」記一筆，回歸與 CDP 讀 window.__gy ── */
+  var MK = {}; window.__gy = MK;
+  function mark(k){ if (MK[k] === undefined) MK[k] = Math.round(performance.now()); }
+  mark('骨架');
+
+  var ID = 'AKfycbwyKc5HUwAf2TBOQWF9CqOfbNkboNkuzdDqADEQqfqHbp2o9WGIdJpX1kpOi8ZRlpd8';
+  var qs = new URLSearchParams(location.search);
+  /* 資料口：預設＝正式部署的 doPost?sapi=1。
+     量測／回歸要改指到測試部署時，用 localStorage 的 gyb_api，**不吃網址參數**：
+     網址參數可以做成一條連結寄給使用者（?api=https://壞人的網站 ⇒ 本頁會把登入憑證 POST 過去），
+     localStorage 只有這個來源上已經在跑的程式（CDP／開發者工具）能寫 ⇒ 不是一條連結就能觸發。
+     而且再過一道形狀閘：只收 script.google.com 的 /macros/s/<部署ID>/exec?sapi=1。 */
+  var API = 'https://script.google.com/macros/s/' + ID + '/exec?sapi=1';
+  var 自訂 = ls(function () { return localStorage.getItem('gyb_api') || ''; }, '');
+  if (自訂 && /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]{30,130}\/exec\?sapi=1$/.test(自訂)) { API = 自訂; MK.自訂資料口 = 1; }
+  else if (自訂) MK.自訂資料口 = '形狀不合已忽略';
+  var TK = 'gyb_token', LK = 'gyb_last';   /* 本機存：登入憑證、上次的數字 */
+  var $ = function (id) { return document.getElementById(id); };
+  var boot = $('boot'), app = $('app'), panel = $('panel'), loading = $('loading');
+  var msg = $('msg'), btns = $('btns'), foot = $('foot');
+
+  function ls(fn, d) { try { return fn(); } catch (e) { return d; } }
+  function tokGet(){ return ls(function(){ return localStorage.getItem(TK) || ''; }, ''); }
+  function tokSet(v){ ls(function(){ v ? localStorage.setItem(TK, v) : localStorage.removeItem(TK); }); }
+  function lastGet(){ return ls(function(){ return JSON.parse(localStorage.getItem(LK) || 'null'); }, null); }
+  function lastSet(o){ ls(function(){ o ? localStorage.setItem(LK, JSON.stringify(o)) : localStorage.removeItem(LK); }); }
+
+  /* ── 畫面（只用 textContent：資料一律當文字，不組 HTML） ── */
+  function paint(d, 舊) {
+    boot.hidden = false;
+    $('who').textContent = d.帳號 || '';
+    $('n').textContent = (d.待辦 === null || d.待辦 === undefined) ? '—' : d.待辦;
+    $('n').classList.toggle('ph', d.待辦 === null || d.待辦 === undefined);
+    var w = $('war');
+    w.textContent = [d.line || '', d.line2 || ''].filter(Boolean).join('\n') || '戰情列讀取中…';
+    w.classList.toggle('ph', !d.line);
+    $('age').textContent = 舊 ? ('上次的數字（' + (d.時 || '') + '），正在更新…') : ('剛更新 ' + (d.時 || ''));
+    mark(舊 ? '畫上次' : '畫新值');
+  }
+
+  /* ① 有上次的資料就先畫——這一步不等網路，是「0.1 秒內看到數字」的來源 */
+  var 上次 = lastGet();
+  if (上次) paint(上次, true);
+
+  /* ── iframe 那三條路：和 index.html 一字不差（不帶登入 → 主入口 → 備用路徑），一條都不拿掉 ── */
+  var ROUTES = [
+    { 名: '不帶登入', url: 'https://script.google.com/macros/s/' + ID + '/exec?', 無cookie: true },
+    { 名: '主入口',   url: 'https://script.google.com/macros/s/' + ID + '/exec?' },
+    { 名: '備用路徑', url: 'https://script.google.com/a/macros/gmail.com/s/' + ID + '/exec?' }
+  ];
+  var BEACON = 'https://script.google.com/macros/s/' + ID + '/exec';
+  var WAIT_MS = Math.min(60000, Math.max(5000, Number(qs.get('wait')) || 9000));
+  var idx = 0, t0 = 0, timer = null, ready = false, 框起跑 = false, sess = Math.random().toString(36).slice(2, 10);
+  $('bTab').href = ROUTES[1].url; $('bAlt').href = ROUTES[2].url;
+
+  function frame(nocookie) {
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = app.title; f.setAttribute('allow', 'clipboard-write');
+    if (nocookie) f.setAttribute('credentialless', '');
+    app.parentNode.replaceChild(f, app); app = f;
+  }
+  function report(結果, extra) {
+    var body = JSON.stringify(Object.assign({
+      頁: '靜態開頁', 結果: 結果, 路徑: ROUTES[idx] ? ROUTES[idx].名 : '', 秒: ((Date.now() - t0) / 1000).toFixed(1),
+      次: sess, ua: navigator.userAgent, 語系: navigator.language, 寬: innerWidth, 高: innerHeight, 時: new Date().toISOString()
+    }, extra || {}));
+    try { fetch(BEACON, { method: 'POST', mode: 'no-cors', credentials: 'omit', body: body, keepalive: true }); } catch (e) {}
+  }
+  /* 開 iframe。showPanel＝true 時連「開啟中…」卡片一起顯示（＝沒有靜態數字可看的情況，和現行畫面一樣）。 */
+  function open(i, showPanel) {
+    idx = i; ready = false; 框起跑 = true; t0 = Date.now(); mark('框起跑');
+    if (showPanel) { panel.hidden = false; boot.hidden = true; }
+    btns.hidden = true; loading.hidden = false;
+    msg.textContent = i === 0 ? '開啟中…' : '這台裝置剛剛那條路沒開出來，改用' + ROUTES[i].名 + '開啟中…';
+    foot.textContent = '';
+    frame(!!ROUTES[i].無cookie);
+    app.src = ROUTES[i].url;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (ready) return;
+      report('沒開出來');
+      if (i + 1 < ROUTES.length) return open(i + 1, showPanel);
+      mark('三條都沒開出來');
+      panel.hidden = false; boot.hidden = true;
+      msg.textContent = '這台裝置三條路都沒開出來（已自動記錄，不用另外回報）。可以按下面的按鈕再試。';
+      foot.textContent = '紀錄編號 ' + sess;
+      btns.hidden = false; loading.hidden = true;
+    }, WAIT_MS);
+  }
+  /* 落回現行畫面：有靜態數字時，框在底下載，載好自動換；沒有就直接整頁交給框。 */
+  function 落回(why) {
+    if (框起跑) return;
+    mark('落回'); MK.落回因 = why;
+    open(0, !上次);
+  }
+
+  /* 這則訊息是不是從「我們自己開的那個框」裡面發出來的：
+     往上走 ev.source 的父鏈（跨來源也讀得到 .parent），要碰到我們這個 iframe 的 contentWindow 才算。
+     站3 的畫面其實在框裡再套一層 *.googleusercontent.com 沙箱 ⇒ ev.source 是孫層，不能直接比 contentWindow。 */
+  function 來自本框(w) {
+    try {
+      var cw = app && app.contentWindow;
+      for (var i = 0; i < 8 && w; i++) { if (cw && w === cw) return true; var p = w.parent; if (p === w) break; w = p; }
+    } catch (e) {}
+    return false;
+  }
+  window.addEventListener('message', function (ev) {
+    var d = ev.data, h;
+    if (!d || !d.gy) return;
+    try { h = new URL(ev.origin).hostname; } catch (e) { return; }
+    if (!/(^|\.)(googleusercontent\.com|google\.com)$/.test(h)) return;   /* 只收站3 那一側的訊息 */
+    /* 憑證相關的兩種訊息再加兩道：來源必須是沙箱網域（站3 畫面跑在那裡），而且必須出自我們自己開的框。
+       不加的話，任何能在 Google 網域下塞一個框／開一個視窗的人都能塞一張 token 進來（token fixation）。 */
+    if (d.gy === 'booking-token' || d.gy === 'booking-token-clear') {
+      if (!/(^|\.)googleusercontent\.com$/.test(h)) { MK.訊息來源不合 = h; return; }
+      if (!來自本框(ev.source)) { MK.訊息非本框 = 1; return; }
+    }
+    if (d.gy === 'booking-ready') {
+      if (ready) return;
+      ready = true; clearTimeout(timer); mark('框好');
+      panel.hidden = true; loading.hidden = true; boot.hidden = true;   /* 真畫面出來了，靜態開頁收掉 */
+      report('開出來');
+    } else if (d.gy === 'booking-token') {
+      if (d.token) { tokSet(String(d.token)); MK.收到token = 1; }        /* 下次開頁就能先畫數字 */
+    } else if (d.gy === 'booking-token-clear') {
+      tokSet(''); lastSet(null); MK.清token = 1;                          /* 登出／逾期：連上次的數字一起丟 */
+    }
+  });
+  $('bRetry').onclick = function () { 框起跑 = false; open(0, true); };
+
+  /* ② 有憑證就一支 POST 把開頁要的數字全要回來；沒有憑證＝新手機／登出後 ⇒ 直接走 iframe（登入頁） */
+  var tok = tokGet();
+  if (!tok) { MK.無token = 1; 落回('無token'); }
+  else {
+    mark('發請求');
+    var 逾時 = setTimeout(function () { MK.資料逾時 = 1; 落回('資料口逾時'); }, Math.max(3000, Number(qs.get('to')) || 8000));
+    fetch(API, {
+      method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* text/plain＝CORS 安全值，不觸發 preflight */
+      body: JSON.stringify({ token: tok, fns: ['todo', 'war'] })
+    })
+      .then(function (r) { mark('回應頭'); return r.text(); })
+      .then(function (txt) {
+        mark('資料到手'); clearTimeout(逾時);
+        var j = null; try { j = JSON.parse(txt); } catch (e) {}
+        if (!j || !j.ok) {
+          if (j && j.需登入) { tokSet(''); lastSet(null); 上次 = null; MK.需登入 = 1; return 落回('需登入'); }
+          MK.資料不通 = (j && (j.忙 ? '忙' : j.格式 ? '格式' : '非ok')) || '不是JSON';
+          return 落回('資料口回' + MK.資料不通);     /* 忙／格式／壞回應：留著上次的數字，框在底下載 */
+        }
+        var td = j.r && j.r.todo && j.r.todo.ok ? j.r.todo.value : null;
+        var wr = j.r && j.r.war && j.r.war.ok ? j.r.war.value : null;
+        var d = {
+          帳號: j.帳號 || '',
+          待辦: td && td.todo && td.todo.ok ? td.todo.n : (td && td.session && td.session.ok === false ? null : null),
+          line: wr && wr.ok ? (wr.line || '') : '',
+          line2: wr && wr.ok ? (wr.line2 || '') : '',
+          時: j.時 || ''
+        };
+        MK.伺服器ms = j.ms;
+        paint(d, false);
+        lastSet(d); 上次 = d;
+        落回('數字已畫');          /* 數字先出來，再把完整系統載進框裡（載好自動換） */
+      })
+      .catch(function (e) {
+        mark('失敗'); clearTimeout(逾時);
+        MK.錯 = String((e && e.message) || e).slice(0, 120);
+        落回('資料口不通');          /* 連不上資料口：絕不白屏，走現行三條路 */
+      });
+    /* 保險：不管資料口回不回，最晚 2.5 秒一定開始載 iframe（使用者要的是整個系統，不只數字） */
+    setTimeout(function () { 落回('保險2.5秒'); }, Math.max(800, Number(qs.get('fb')) || 2500));
+  }
+})();
+</script>
+</body>
+</html>
