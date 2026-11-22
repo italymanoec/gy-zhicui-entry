@@ -222,6 +222,10 @@
   else {
     mark('發請求');
     var 逾時 = setTimeout(function () { MK.資料逾時 = 1; 落回('資料口逾時'); }, Math.max(3000, Number(qs.get('to')) || 8000));
+    /* 資料口回「忙」（限流那把鎖剛好被佔、或那一分鐘太多人）不是登入失效，也不是壞掉：
+       隔 0.7 秒再打一次，只重打一次；第二次還是忙才照舊落回站內畫面。
+       上面那個 8 秒逾時從第一次發請求起算、兩次共用，不因重打而延長。 */
+    var 打資料口 = function (第幾次) {
     fetch(API, {
       method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* text/plain＝CORS 安全值，不觸發 preflight */
@@ -229,10 +233,16 @@
     })
       .then(function (r) { mark('回應頭'); return r.text(); })
       .then(function (txt) {
-        mark('資料到手'); clearTimeout(逾時);
         var j = null; try { j = JSON.parse(txt); } catch (e) {}
+        if (j && !j.ok && j.忙 && 第幾次 === 1) {
+          MK.忙重打 = 1; MK.第一次忙因 = String(j.忙因 || '').slice(0, 20);
+          setTimeout(function () { 打資料口(2); }, 700);
+          return;
+        }
+        mark('資料到手'); clearTimeout(逾時);
         if (!j || !j.ok) {
           if (j && j.需登入) { tokSet(''); lastSet(null); 上次 = null; MK.需登入 = 1; return 落回('需登入'); }
+          if (j && j.忙) MK.忙因 = String(j.忙因 || '').slice(0, 20);
           MK.資料不通 = (j && (j.忙 ? '忙' : j.格式 ? '格式' : '非ok')) || '不是JSON';
           return 落回('資料口回' + MK.資料不通);     /* 忙／格式／壞回應：留著上次的數字，框在底下載 */
         }
@@ -255,6 +265,8 @@
         MK.錯 = String((e && e.message) || e).slice(0, 120);
         落回('資料口不通');          /* 連不上資料口：絕不白屏，走現行三條路 */
       });
+    };
+    打資料口(1);
     /* 保險：不管資料口回不回，最晚 2.5 秒一定開始載 iframe（使用者要的是整個系統，不只數字） */
     setTimeout(function () { 落回('保險2.5秒'); }, Math.max(800, Number(qs.get('fb')) || 2500));
   }
