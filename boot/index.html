@@ -225,7 +225,13 @@
     /* 資料口回「忙」（限流那把鎖剛好被佔、或那一分鐘太多人）不是登入失效，也不是壞掉：
        隔 0.7 秒再打一次，只重打一次；第二次還是忙才照舊落回站內畫面。
        上面那個 8 秒逾時從第一次發請求起算、兩次共用，不因重打而延長。 */
+    /* 同一個請求同時發兩支，先拿到數字的那支作數、另一支不理（交接265）。
+       為什麼：等 Google 資料口回話佔冷開九成以上，而且同樣的請求每趟差到 1–2 秒；取先到的那支，中位與長尾都降。
+       一支回忙／壞掉而另一支還沒回 ⇒ 等另一支；兩支都沒拿到數字才照舊（忙 ⇒ 重打一次；其餘 ⇒ 落回）。
+       需登入不等另一支（伺服器先驗憑證才限流，這個結論不會因為哪一支而不同）。 */
+    var 定案 = false, 未回 = 0;
     var 打資料口 = function (第幾次) {
+    未回++;
     fetch(API, {
       method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* text/plain＝CORS 安全值，不觸發 preflight */
@@ -233,13 +239,16 @@
     })
       .then(function (r) { mark('回應頭'); return r.text(); })
       .then(function (txt) {
+        未回--;
+        if (定案) return;
         var j = null; try { j = JSON.parse(txt); } catch (e) {}
+        if (!(j && (j.ok || j.需登入)) && 未回 > 0) return;   /* 這支沒拿到數字，另一支還沒回 ⇒ 等它 */
         if (j && !j.ok && j.忙 && 第幾次 === 1) {
           MK.忙重打 = 1; MK.第一次忙因 = String(j.忙因 || '').slice(0, 20);
           setTimeout(function () { 打資料口(2); }, 700);
           return;
         }
-        mark('資料到手'); clearTimeout(逾時);
+        定案 = true; mark('資料到手'); clearTimeout(逾時);
         if (!j || !j.ok) {
           if (j && j.需登入) { tokSet(''); lastSet(null); 上次 = null; MK.需登入 = 1; return 落回('需登入'); }
           if (j && j.忙) MK.忙因 = String(j.忙因 || '').slice(0, 20);
@@ -260,12 +269,13 @@
         落回('數字已畫');          /* 數字先出來，再把完整系統載進框裡（載好自動換） */
       })
       .catch(function (e) {
-        mark('失敗'); clearTimeout(逾時);
+        if (定案 || --未回 > 0) return;
+        定案 = true; mark('失敗'); clearTimeout(逾時);
         MK.錯 = String((e && e.message) || e).slice(0, 120);
         落回('資料口不通');          /* 連不上資料口：絕不白屏，走現行三條路 */
       });
     };
-    打資料口(1);
+    打資料口(1); 打資料口(1);
     /* 保險：不管資料口回不回，最晚 2.5 秒一定開始載 iframe（使用者要的是整個系統，不只數字） */
     setTimeout(function () { 落回('保險2.5秒'); }, Math.max(800, Number(qs.get('fb')) || 2500));
   }
