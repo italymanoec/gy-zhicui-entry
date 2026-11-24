@@ -118,7 +118,7 @@
     $('n').textContent = (d.待辦 === null || d.待辦 === undefined) ? '—' : d.待辦;
     $('n').classList.toggle('ph', d.待辦 === null || d.待辦 === undefined);
     var w = $('war');
-    w.textContent = [(d.line || '').replace(/｜今日[^｜]*/, ''), d.line2 || ''].filter(Boolean).join('\n') || '戰情列讀取中…';
+    w.textContent = (d.line || '').replace(/｜今日[^｜]*/, '') || '戰情列讀取中…';
     w.classList.toggle('ph', !d.line);
     $('age').textContent = 舊 ? ('上次的數字（' + (d.時 || '') + '），正在更新…') : ('剛更新 ' + (d.時 || ''));
     mark(舊 ? '畫上次' : '畫新值');
@@ -252,7 +252,6 @@
           帳號: j.帳號 || '',
           待辦: td && td.todo && td.todo.ok ? td.todo.n : (td && td.session && td.session.ok === false ? null : null),
           line: wr && wr.ok ? (wr.line || '') : '',
-          line2: wr && wr.ok ? (wr.line2 || '') : '',
           時: j.時 || ''
         };
         MK.伺服器ms = j.ms;
