@@ -229,13 +229,16 @@
        為什麼：等 Google 資料口回話佔冷開九成以上，而且同樣的請求每趟差到 1–2 秒；取先到的那支，中位與長尾都降。
        一支回忙／壞掉而另一支還沒回 ⇒ 等另一支；兩支都沒拿到數字才照舊（忙 ⇒ 重打一次；其餘 ⇒ 落回）。
        需登入不等另一支（伺服器先驗憑證才限流，這個結論不會因為哪一支而不同）。 */
-    var 定案 = false, 未回 = 0;
+    /* 只要第一屏的兩樣（待辦件數、戰情列那一行）⇒ 打站3 的小資料口 boot（交接268）。
+       站3 被退回沒有 boot 的舊版時（回應裡沒有 r.boot）⇒ 改打原本的 todo＋war 再要一次，數字照樣出得來。 */
+    var 定案 = false, 未回 = 0, FNS = ['boot'];
     var 打資料口 = function (第幾次) {
+    var 用 = FNS;
     未回++;
     fetch(API, {
       method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* text/plain＝CORS 安全值，不觸發 preflight */
-      body: JSON.stringify({ token: tok, fns: ['todo', 'war'] })
+      body: JSON.stringify({ token: tok, fns: 用 })
     })
       .then(function (r) { mark('回應頭'); return r.text(); })
       .then(function (txt) {
@@ -243,6 +246,10 @@
         if (定案) return;
         var j = null; try { j = JSON.parse(txt); } catch (e) {}
         if (!(j && (j.ok || j.需登入)) && 未回 > 0) return;   /* 這支沒拿到數字，另一支還沒回 ⇒ 等它 */
+        if (j && j.ok && 用[0] === 'boot' && !(j.r && j.r.boot)) {   /* 舊版站3 不認得 boot */
+          if (FNS === 用) { FNS = ['todo', 'war']; MK.舊資料口 = 1; 打資料口(第幾次); }
+          return;
+        }
         if (j && !j.ok && j.忙 && 第幾次 === 1) {
           MK.忙重打 = 1; MK.第一次忙因 = String(j.忙因 || '').slice(0, 20);
           setTimeout(function () { 打資料口(2); }, 700);
@@ -255,12 +262,13 @@
           MK.資料不通 = (j && (j.忙 ? '忙' : j.格式 ? '格式' : '非ok')) || '不是JSON';
           return 落回('資料口回' + MK.資料不通);     /* 忙／格式／壞回應：留著上次的數字，框在底下載 */
         }
+        var bt = j.r && j.r.boot && j.r.boot.ok ? j.r.boot.value : null;
         var td = j.r && j.r.todo && j.r.todo.ok ? j.r.todo.value : null;
         var wr = j.r && j.r.war && j.r.war.ok ? j.r.war.value : null;
         var d = {
           帳號: j.帳號 || '',
-          待辦: td && td.todo && td.todo.ok ? td.todo.n : (td && td.session && td.session.ok === false ? null : null),
-          line: wr && wr.ok ? (wr.line || '') : '',
+          待辦: bt ? bt.待辦 : (td && td.todo && td.todo.ok ? td.todo.n : null),
+          line: bt ? (bt.line || '') : (wr && wr.ok ? (wr.line || '') : ''),
           時: j.時 || ''
         };
         MK.伺服器ms = j.ms;
