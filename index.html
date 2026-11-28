@@ -110,7 +110,7 @@
   var 已畫 = false;   /* 畫面上已經有數字了沒：決定等一下開框時要不要蓋「開啟中…」那張卡片 */
   function paint(d, 舊) {
     已畫 = true;
-    boot.hidden = false;
+    if (!ready) boot.hidden = false;
     /* 數字回來的時候，框可能已經在底下載了（保險 2.5 秒）＆「開啟中…」那張卡片蓋在上面 ⇒ 收掉它，讓數字看得見。
        真畫面已經出來（ready）或三條路都沒開出來（放棄，卡片上有重試鈕）這兩種情況不收。 */
     if (!ready && !放棄) panel.hidden = true;
@@ -122,6 +122,7 @@
     w.classList.toggle('ph', !d.line);
     $('age').textContent = 舊 ? ('上次的數字（' + (d.時 || '') + '），正在更新…') : ('剛更新 ' + (d.時 || ''));
     mark(舊 ? '畫上次' : '畫新值');
+    if (!舊) { 新值 = d; 交給框(); }
   }
 
   /* ① 有上次的資料就先畫——這一步不等網路，是「0.1 秒內看到數字」的來源 */
@@ -175,8 +176,9 @@
   }
   /* 落回現行畫面：有靜態數字時，框在底下載，載好自動換；沒有就直接整頁交給框。 */
   function 落回(why) {
-    if (框起跑) return;
     mark('落回'); MK.落回因 = why;
+    /* 交接293：框一開頁就先載了 ⇒ 這裡只記結論；資料口沒給數字（忙／逾時／不通／需登入）而且畫面上沒有數字，就照原樣換成「開啟中…」那張卡片 */
+    if (框起跑) { if (!已畫 && !ready && !放棄) { panel.hidden = false; boot.hidden = true; } return; }
     /* 已經畫出數字了就不要蓋「開啟中…」那張卡片——數字要一直看得到，直到真畫面出來。
        （判準用「畫面上有沒有數字」，不是「有沒有上次的快取」：剛登入第一次開是先拿到新值才落回的。） */
     open(0, !已畫);
@@ -204,6 +206,7 @@
       if (!來自本框(ev.source)) { MK.訊息非本框 = 1; return; }
     }
     if (d.gy === 'booking-ready') {
+      if (/(^|\.)googleusercontent\.com$/.test(h) && 來自本框(ev.source)) { 框窗 = ev.source; 框源 = ev.origin; 交給框(); }
       if (ready) return;
       ready = true; clearTimeout(timer); mark('框好');
       panel.hidden = true; loading.hidden = true; boot.hidden = true;   /* 真畫面出來了，靜態開頁收掉 */
@@ -211,9 +214,16 @@
     } else if (d.gy === 'booking-token') {
       if (d.token) { tokSet(String(d.token)); MK.收到token = 1; }        /* 下次開頁就能先畫數字 */
     } else if (d.gy === 'booking-token-clear') {
-      tokSet(''); lastSet(null); MK.清token = 1;                          /* 登出／逾期：連上次的數字一起丟 */
+      tokSet(''); lastSet(null); 新值 = null; MK.清token = 1;                          /* 登出／逾期：連上次的數字一起丟 */
     }
   });
+  /* 交接293：入口頁已經向伺服器要到的待辦件數，交給站3「我的」頁先畫（它自己那一趟回來會再蓋一次）。
+     只交給發出 booking-ready 的那個框（來自本框、沙箱網域），只交帳號、件數、是不是舊值，不交憑證。 */
+  var 新值 = null, 框窗 = null, 框源 = '';
+  function 交給框() {
+    if (!新值 || !框窗 || 新值.待辦 === null || 新值.待辦 === undefined) return;
+    try { 框窗.postMessage({ gy: 'entry-todo', 帳號: 新值.帳號, n: 新值.待辦, d: 新值.演練, u: 新值.戶別, 舊值: 新值.舊值, 舊值秒: 新值.舊值秒 }, 框源); mark('交給框'); } catch (e) {}   /* 交接368續四：件數之外連戶別、演練數一起交 ⇒ 站3 收到就是完整待辦 */
+  }
   $('bRetry').onclick = function () { 框起跑 = false; open(0, true); };
 
   /* ② 有憑證就一支 POST 把開頁要的數字全要回來；沒有憑證＝新手機／登出後 ⇒ 直接走 iframe（登入頁） */
@@ -269,7 +279,9 @@
           帳號: j.帳號 || '',
           待辦: bt ? bt.待辦 : (td && td.todo && td.todo.ok ? td.todo.n : null),
           line: bt ? (bt.line || '') : (wr && wr.ok ? (wr.line || '') : ''),
-          時: j.時 || ''
+          時: j.時 || '',
+          演練: bt && typeof bt.演練 === 'number' ? bt.演練 : null, 戶別: (bt && bt.戶別) || null,   /* 交接368續四：資料口多回的兩欄（沒有就是 null ⇒ 站3 照 293 原樣只畫件數） */
+          舊值: !!(bt ? bt.舊值 : (td && td.todo && td.todo.舊值)), 舊值秒: Number(bt ? bt.舊值秒 : (td && td.todo && td.todo.舊值秒)) || 0   /* 交接293：伺服器說這個件數是同日長備份 ⇒ 照轉給站3 標時間 */
         };
         MK.伺服器ms = j.ms;
         paint(d, false);
@@ -284,8 +296,8 @@
       });
     };
     打資料口(1); 打資料口(1);
-    /* 保險：不管資料口回不回，最晚 2.5 秒一定開始載 iframe（使用者要的是整個系統，不只數字） */
-    setTimeout(function () { 落回('保險2.5秒'); }, Math.max(800, Number(qs.get('fb')) || 2500));
+    /* 交接293：不等數字、不等 2.5 秒，一開就同時載 iframe（數字回來照樣先畫在上面，框好了才換） */
+    MK.框先開 = 1; open(0, false);
   }
 })();
 </script>
